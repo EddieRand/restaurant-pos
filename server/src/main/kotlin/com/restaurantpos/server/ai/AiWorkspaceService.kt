@@ -98,6 +98,7 @@ class AiWorkspaceService(
                         completedAt = run[AiWorkspaceRunsTable.completedAt],
                         steps = loadSteps(runId),
                         error = run.runError(),
+                        clarification = run.runClarification(),
                     )
                 }
             AiWorkspaceSessionDto(
@@ -216,7 +217,11 @@ class AiWorkspaceService(
             val plan = withTimeout(20_000) {
                 requireModel().plan(request.message.trim(), request.expert, request.context, allowedTools)
             }
-            validatePlan(plan, allowedTools)
+            val clarification = validatePlan(plan, allowedTools, request)
+            if (clarification != null) {
+                awaitClarification(runId, clarification.toDto())
+                return
+            }
             val stepIds = plan.steps.map { newId() }
             transaction {
                 plan.steps.forEachIndexed { index, planned ->
@@ -289,8 +294,23 @@ class AiWorkspaceService(
         }
     }
 
-    private fun validatePlan(plan: AiWorkspacePlan, allowedTools: Set<String>) {
-        if (!plan.clarification.isNullOrBlank()) throw AiWorkspaceException("AI_CLARIFICATION_REQUIRED", plan.clarification)
+    private fun validatePlan(
+        plan: AiWorkspacePlan,
+        allowedTools: Set<String>,
+        request: AiWorkspaceMessageRequest,
+    ): AiWorkspaceClarification? {
+        val clarification = plan.clarification ?: missingPeriodClarification(plan, request)
+        if (clarification != null) {
+            require(clarification.question.trim().length in 1..256) { "clarification question is invalid" }
+            require(clarification.options.size in 2..4) { "clarification must contain 2 to 4 options" }
+            require(clarification.options.map { it.id }.distinct().size == clarification.options.size) { "clarification option IDs must be unique" }
+            clarification.options.forEach {
+                require(it.id.matches(Regex("[a-z0-9_-]{1,40}"))) { "clarification option ID is invalid" }
+                require(it.label.trim().length in 1..80 && it.value.trim().length in 1..256) { "clarification option is invalid" }
+            }
+            require(plan.steps.isEmpty() || plan.clarification == null) { "clarification plan must not contain executable steps" }
+            return clarification
+        }
         if (plan.steps.isEmpty()) throw AiWorkspaceException("AI_UNSUPPORTED_INTENT", "没有可执行的已注册能力")
         if (plan.steps.size > 5) throw AiWorkspaceException("AI_INVALID_RESPONSE", "AI plan exceeds five steps", true)
         plan.steps.forEachIndexed { index, step ->
@@ -307,6 +327,34 @@ class AiWorkspaceService(
                 throw AiWorkspaceException("AI_INVALID_RESPONSE", "AI report query type is invalid", true)
             }
         }
+        return null
+    }
+
+    private fun missingPeriodClarification(
+        plan: AiWorkspacePlan,
+        request: AiWorkspaceMessageRequest,
+    ): AiWorkspaceClarification? {
+        val usesReports = plan.steps.any { it.tool == AiWorkspaceTools.OPERATING_INSIGHT || it.tool == AiWorkspaceTools.REPORT_QUERY }
+        val hasPageRange = request.context.fromMs != null && request.context.toMs != null
+        if (!usesReports || hasPageRange || hasRecognizedPeriod(request.message)) return null
+        return AiWorkspaceClarification(
+            question = "你希望分析哪个时间范围？",
+            options = listOf(
+                AiWorkspaceClarificationOption("today", "今天", "日期范围：今天"),
+                AiWorkspaceClarificationOption("yesterday", "昨天", "日期范围：昨天"),
+                AiWorkspaceClarificationOption("last_7_days", "近 7 天", "日期范围：近 7 天"),
+                AiWorkspaceClarificationOption("this_month", "本月", "日期范围：本月"),
+            ),
+        )
+    }
+
+    private fun hasRecognizedPeriod(message: String): Boolean {
+        val normalized = message.replace(" ", "")
+        return listOf(
+            "今天", "今日", "昨天", "昨日", "近7天", "最近7天", "过去7天", "近七天", "最近七天", "过去七天",
+            "近30天", "最近30天", "过去30天", "近三十天", "最近三十天", "过去三十天",
+            "本周", "这周", "本星期", "这个星期", "本月", "这个月", "当月",
+        ).any(normalized::contains)
     }
 
     private fun toolsForExpert(expert: AiWorkspaceExpert): Set<String> = when (expert) {
@@ -392,6 +440,15 @@ class AiWorkspaceService(
         appendEvent(runId, "run.completed", runStatus = status, error = error)
     }
 
+    private fun awaitClarification(runId: String, clarification: AiWorkspaceClarificationDto) = transaction {
+        AiWorkspaceRunsTable.update({ AiWorkspaceRunsTable.id eq runId }) {
+            it[status] = "AWAITING_CLARIFICATION"
+            it[completedAt] = now()
+            it[clarificationJson] = json.encodeToString(clarification)
+        }
+        appendEvent(runId, "run.awaiting_clarification", runStatus = "AWAITING_CLARIFICATION", clarification = clarification)
+    }
+
     private fun updateStep(
         stepId: String,
         status: AiWorkspaceStepStatus,
@@ -419,6 +476,7 @@ class AiWorkspaceService(
         step: AiWorkspaceStepDto? = null,
         runStatus: String? = null,
         error: AiWorkspaceStepErrorDto? = null,
+        clarification: AiWorkspaceClarificationDto? = null,
     ) {
         val next = (AiWorkspaceEventsTable.selectAll()
             .where { AiWorkspaceEventsTable.runId eq runId }
@@ -433,6 +491,7 @@ class AiWorkspaceService(
             it[errorCode] = error?.code
             it[errorMessage] = error?.message
             it[errorRetryable] = error?.retryable ?: false
+            it[clarificationJson] = clarification?.let { value -> json.encodeToString(value) }
         }
     }
 
@@ -496,11 +555,20 @@ class AiWorkspaceService(
         step = this[AiWorkspaceEventsTable.stepJson]?.let { json.decodeFromString(it) },
         runStatus = this[AiWorkspaceEventsTable.runStatus],
         error = this.eventError(),
+        clarification = this[AiWorkspaceEventsTable.clarificationJson]?.let { json.decodeFromString(it) },
     )
 
     private fun ResultRow.runError(): AiWorkspaceStepErrorDto? = this[AiWorkspaceRunsTable.errorCode]?.let {
         AiWorkspaceStepErrorDto(it, this[AiWorkspaceRunsTable.errorMessage].orEmpty(), this[AiWorkspaceRunsTable.errorRetryable])
     }
+
+    private fun ResultRow.runClarification(): AiWorkspaceClarificationDto? =
+        this[AiWorkspaceRunsTable.clarificationJson]?.let { json.decodeFromString(it) }
+
+    private fun AiWorkspaceClarification.toDto() = AiWorkspaceClarificationDto(
+        question = question.trim(),
+        options = options.map { AiWorkspaceClarificationOptionDto(it.id, it.label.trim(), it.value.trim()) },
+    )
 
     private fun ResultRow.eventError(): AiWorkspaceStepErrorDto? = this[AiWorkspaceEventsTable.errorCode]?.let {
         AiWorkspaceStepErrorDto(it, this[AiWorkspaceEventsTable.errorMessage].orEmpty(), this[AiWorkspaceEventsTable.errorRetryable])
@@ -517,7 +585,7 @@ class AiWorkspaceService(
 
     companion object {
         private const val MAX_RANGE_MS = 90L * 24 * 60 * 60 * 1000
-        private val TERMINAL_RUN_STATUSES = setOf("COMPLETED", "FAILED")
+        private val TERMINAL_RUN_STATUSES = setOf("COMPLETED", "FAILED", "AWAITING_CLARIFICATION")
         private val QUERY_TYPES = setOf("SUMMARY", "TOP_ITEMS", "PEAK_HOURS", "PAYMENT_METHODS", "TREND")
 
         fun fromEnvironment(

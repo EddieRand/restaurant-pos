@@ -7,6 +7,7 @@ import {
   type AiPriceExecution,
   type AiPriceProposal,
   type AiWorkspaceEvent,
+  type AiWorkspaceClarificationOption,
   type AiWorkspaceExpert,
   type AiWorkspaceRun,
   type AiWorkspaceSession,
@@ -19,7 +20,7 @@ import { aiWorkspaceCopy as copy, workspaceErrorMessage } from '../i18n/aiWorksp
 type StreamState = 'live' | 'reconnecting' | 'complete'
 
 function isRunTerminal(status: string) {
-  return ['COMPLETED', 'SUCCEEDED', 'FAILED', 'CANCELLED'].includes(status.toUpperCase())
+  return ['COMPLETED', 'SUCCEEDED', 'FAILED', 'CANCELLED', 'AWAITING_CLARIFICATION'].includes(status.toUpperCase())
 }
 
 function upsertStep(steps: AiWorkspaceStep[], step: AiWorkspaceStep) {
@@ -124,15 +125,17 @@ export default function AiWorkspacePage() {
           controller.signal,
           (event: AiWorkspaceEvent) => {
             cursorByRunRef.current[run.runId] = Math.max(cursorByRunRef.current[run.runId] ?? 0, event.sequence)
-            setStreamState(event.type === 'run.completed' ? 'complete' : 'live')
+            const terminalEvent = event.type === 'run.completed' || event.type === 'run.awaiting_clarification'
+            setStreamState(terminalEvent ? 'complete' : 'live')
             setLiveRun(current => {
               const base = current?.runId === run.runId ? current : run
               return {
                 ...base,
                 status: event.runStatus ?? base.status,
-                completedAt: event.type === 'run.completed' ? event.occurredAt : base.completedAt,
+                completedAt: terminalEvent ? event.occurredAt : base.completedAt,
                 steps: event.step ? upsertStep(base.steps, event.step) : base.steps,
                 error: event.error ?? base.error,
+                clarification: event.clarification ?? base.clarification,
               }
             })
           },
@@ -212,8 +215,8 @@ export default function AiWorkspacePage() {
     }
   }
 
-  async function sendMessage() {
-    const content = message.trim()
+  async function sendMessage(contentOverride?: string) {
+    const content = (contentOverride ?? message).trim()
     if (!content || sending) return
     setSending(true)
     setError(null)
@@ -240,6 +243,15 @@ export default function AiWorkspacePage() {
     } finally {
       setSending(false)
     }
+  }
+
+  async function answerClarification(run: AiWorkspaceRun, option: AiWorkspaceClarificationOption) {
+    const original = activeSession?.messages.find(item => item.messageId === run.messageId)?.content
+    if (!original) {
+      setError(copy.sendFailed)
+      return
+    }
+    await sendMessage(`原始请求：${original}\n补充确认：${option.value}\n请基于以上信息继续处理原始请求。`)
   }
 
   // Execute errors are bound to the originating step (not the global banner) so the
@@ -304,7 +316,7 @@ export default function AiWorkspacePage() {
               {!loadingSession && activeSession && activeSession.messages.length > 0 && <div className="space-y-5">{activeSession.messages.map(item => {
                 const user = item.role.toLowerCase() === 'user'
                 const messageRuns = runsByMessage.get(item.messageId) ?? []
-                return <div key={item.messageId} className={user ? 'ml-auto max-w-3xl' : 'mr-auto max-w-3xl'}><div className={`mb-1 text-[11px] text-gray-400 ${user ? 'text-right' : ''}`}>{user ? copy.user : copy.assistant} · {new Date(item.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</div><div className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-6 ${user ? 'rounded-tr-sm bg-brand-500 text-white' : 'rounded-tl-sm border border-gray-200 bg-white text-gray-700'}`}>{item.content}</div>{messageRuns.map(run => { const renderedRun = liveRun?.runId === run.runId ? liveRun : run; return <AiWorkspaceRunPanel key={run.runId} run={renderedRun} streamState={liveRun?.runId === run.runId ? streamState : isRunTerminal(run.status) ? 'complete' : undefined} executionByStep={executionByStep} executingStepId={executingStepId} executeErrorByStep={executeErrorByStep} onExecute={executePrice} /> })}</div>
+                return <div key={item.messageId} className={user ? 'ml-auto max-w-3xl' : 'mr-auto max-w-3xl'}><div className={`mb-1 text-[11px] text-gray-400 ${user ? 'text-right' : ''}`}>{user ? copy.user : copy.assistant} · {new Date(item.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</div><div className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-6 ${user ? 'rounded-tr-sm bg-brand-500 text-white' : 'rounded-tl-sm border border-gray-200 bg-white text-gray-700'}`}>{item.content}</div>{messageRuns.map(run => { const renderedRun = liveRun?.runId === run.runId ? liveRun : run; return <AiWorkspaceRunPanel key={run.runId} run={renderedRun} streamState={liveRun?.runId === run.runId ? streamState : isRunTerminal(run.status) ? 'complete' : undefined} executionByStep={executionByStep} executingStepId={executingStepId} executeErrorByStep={executeErrorByStep} onExecute={executePrice} onClarify={answerClarification} clarifying={sending} /> })}</div>
               })}<div ref={messagesEndRef} /></div>}
             </section>
           </div>

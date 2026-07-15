@@ -247,6 +247,68 @@ class AiWorkspaceRoutesTest {
         assertEquals(today.atStartOfDay(zone).toInstant().toEpochMilli() - 1, period.toMs)
     }
 
+    @Test
+    fun `missing report period asks choices and selected answer continues original request`() = testApplication {
+        val model = FakeWorkspaceModel(
+            AiWorkspacePlan(listOf(AiWorkspacePlannedStep(AiWorkspaceTools.REPORT_QUERY, "查询经营数据", "营业情况", "SUMMARY"))),
+        )
+        val insight = insightService()
+        val price = AiPriceAgentService(null, enabled = true, priceUpdateEnabled = true)
+        val workspace = AiWorkspaceService(model, insight, price, enabled = true, permissionChecker = { _, _ -> true })
+        application { configurePlugins(); configureAuth(); configureRouting(insight, price, workspace) }
+        val client = createClient { install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) } }
+        val sessionId = client.post("/admin/ai/workspace/sessions") {
+            adminAuth(); contentType(ContentType.Application.Json); setBody(CreateAiWorkspaceSessionRequest())
+        }.body<AiWorkspaceSessionDto>().sessionId
+
+        client.post("/admin/ai/workspace/sessions/$sessionId/messages") {
+            adminAuth(); contentType(ContentType.Application.Json)
+            setBody(AiWorkspaceMessageRequest(sessionId, message = "分析营业情况"))
+        }
+        val awaiting = awaitRun(client, sessionId).runs.single()
+        assertEquals("AWAITING_CLARIFICATION", awaiting.status)
+        assertEquals("你希望分析哪个时间范围？", awaiting.clarification!!.question)
+        assertEquals(listOf("今天", "昨天", "近 7 天", "本月"), awaiting.clarification.options.map { it.label })
+        assertTrue(awaiting.steps.isEmpty())
+
+        client.post("/admin/ai/workspace/sessions/$sessionId/messages") {
+            adminAuth(); contentType(ContentType.Application.Json)
+            setBody(AiWorkspaceMessageRequest(sessionId, message = "原始请求：分析营业情况\n补充确认：日期范围：今天\n请继续处理。"))
+        }
+        val completed = awaitRunCount(client, sessionId, 2).runs.last()
+        assertEquals("COMPLETED", completed.status)
+        assertTrue(completed.steps.single().result?.query != null)
+    }
+
+    @Test
+    fun `planner ambiguity is persisted as selectable clarification without executing`() = testApplication {
+        val clarification = AiWorkspaceClarification(
+            "你要调整哪一道宫保鸡丁？",
+            listOf(
+                AiWorkspaceClarificationOption("dine_in", "堂食菜单", "菜品范围：堂食菜单的宫保鸡丁"),
+                AiWorkspaceClarificationOption("takeaway", "外卖菜单", "菜品范围：外卖菜单的宫保鸡丁"),
+            ),
+        )
+        val model = FakeWorkspaceModel(AiWorkspacePlan(emptyList(), clarification))
+        val insight = insightService()
+        val price = AiPriceAgentService(null, enabled = true, priceUpdateEnabled = true)
+        val workspace = AiWorkspaceService(model, insight, price, enabled = true, permissionChecker = { _, _ -> true })
+        application { configurePlugins(); configureAuth(); configureRouting(insight, price, workspace) }
+        val client = createClient { install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) } }
+        val sessionId = client.post("/admin/ai/workspace/sessions") {
+            adminAuth(); contentType(ContentType.Application.Json); setBody(CreateAiWorkspaceSessionRequest())
+        }.body<AiWorkspaceSessionDto>().sessionId
+        client.post("/admin/ai/workspace/sessions/$sessionId/messages") {
+            adminAuth(); contentType(ContentType.Application.Json)
+            setBody(AiWorkspaceMessageRequest(sessionId, message = "把宫保鸡丁涨价5元"))
+        }
+
+        val run = awaitRun(client, sessionId).runs.single()
+        assertEquals("AWAITING_CLARIFICATION", run.status)
+        assertEquals(2, run.clarification!!.options.size)
+        assertTrue(run.steps.isEmpty())
+    }
+
     private suspend fun awaitRun(
         client: io.ktor.client.HttpClient,
         sessionId: String,
@@ -256,10 +318,23 @@ class AiWorkspaceRoutesTest {
             val session = client.get("/admin/ai/workspace/sessions/$sessionId") {
                 if (admin) adminAuth() else cashierAuth()
             }.body<AiWorkspaceSessionDto>()
-            if (session.runs.singleOrNull()?.status in setOf("COMPLETED", "FAILED")) return session
+            if (session.runs.singleOrNull()?.status in setOf("COMPLETED", "FAILED", "AWAITING_CLARIFICATION")) return session
             delay(25)
         }
         error("workspace run did not finish")
+    }
+
+    private suspend fun awaitRunCount(
+        client: io.ktor.client.HttpClient,
+        sessionId: String,
+        count: Int,
+    ): AiWorkspaceSessionDto {
+        repeat(80) {
+            val session = client.get("/admin/ai/workspace/sessions/$sessionId") { adminAuth() }.body<AiWorkspaceSessionDto>()
+            if (session.runs.size == count && session.runs.last().status in setOf("COMPLETED", "FAILED", "AWAITING_CLARIFICATION")) return session
+            delay(25)
+        }
+        error("workspace run count did not reach $count")
     }
 
     private fun insightService(): AiInsightService {

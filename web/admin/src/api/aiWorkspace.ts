@@ -92,6 +92,17 @@ export interface AiWorkspaceError {
   retryable: boolean
 }
 
+export interface AiWorkspaceClarificationOption {
+  id: string
+  label: string
+  value: string
+}
+
+export interface AiWorkspaceClarification {
+  question: string
+  options: AiWorkspaceClarificationOption[]
+}
+
 export interface AiWorkspaceStep {
   stepId: string
   tool: string
@@ -112,6 +123,7 @@ export interface AiWorkspaceRun {
   completedAt?: number | null
   steps: AiWorkspaceStep[]
   error?: AiWorkspaceError | null
+  clarification?: AiWorkspaceClarification | null
 }
 
 export interface AiWorkspaceSessionSummary {
@@ -137,12 +149,13 @@ export interface AiWorkspaceAccepted {
 
 export interface AiWorkspaceEvent {
   sequence: number
-  type: 'message.accepted' | 'plan.created' | 'step.started' | 'step.completed' | 'step.awaiting_confirmation' | 'step.failed' | 'step.executed' | 'run.completed'
+  type: 'message.accepted' | 'plan.created' | 'step.started' | 'step.completed' | 'step.awaiting_confirmation' | 'step.failed' | 'step.executed' | 'run.awaiting_clarification' | 'run.completed'
   occurredAt: number
   runId: string
   step?: AiWorkspaceStep | null
   runStatus?: string | null
   error?: AiWorkspaceError | null
+  clarification?: AiWorkspaceClarification | null
 }
 
 export class AiWorkspaceApiError extends Error {
@@ -240,7 +253,7 @@ export async function streamAiWorkspaceRun(
     if (dataLines.length === 0) return
     const event = JSON.parse(dataLines.join('\n')) as AiWorkspaceEvent
     cursor = Math.max(cursor, Number.isFinite(eventId) ? eventId! : event.sequence)
-    terminal = terminal || event.type === 'run.completed'
+    terminal = terminal || event.type === 'run.completed' || event.type === 'run.awaiting_clarification'
     onEvent(event)
   }
 

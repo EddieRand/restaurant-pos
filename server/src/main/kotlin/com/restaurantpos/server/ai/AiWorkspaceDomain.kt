@@ -20,7 +20,20 @@ data class AiWorkspacePlannedStep(
 @Serializable
 data class AiWorkspacePlan(
     val steps: List<AiWorkspacePlannedStep>,
-    val clarification: String? = null,
+    val clarification: AiWorkspaceClarification? = null,
+)
+
+@Serializable
+data class AiWorkspaceClarificationOption(
+    val id: String,
+    val label: String,
+    val value: String,
+)
+
+@Serializable
+data class AiWorkspaceClarification(
+    val question: String,
+    val options: List<AiWorkspaceClarificationOption>,
 )
 
 interface AiWorkspaceModelClient {

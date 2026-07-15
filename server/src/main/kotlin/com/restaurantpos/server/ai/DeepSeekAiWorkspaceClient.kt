@@ -45,9 +45,13 @@ class DeepSeekAiWorkspaceClient(
             时间上下文：${json.encodeToString(context)}
             将指令拆为最多 5 个有序步骤。格式：
             {"steps":[{"tool":"...","displayTitle":"中文短标题","instruction":"该工具需要的完整子指令","queryType":null,"dependsOn":[]}],"clarification":null}
+            需要澄清时 steps 必须为空，clarification 格式为：
+            {"question":"一个简短明确的问题","options":[{"id":"稳定英文标识","label":"给用户看的中文","value":"补充给后续规划器的完整信息"}]}
+            提供 2 到 4 个互斥、可直接选择的选项，不得把“其他”作为选项。
             queryType 只允许 SUMMARY、TOP_ITEMS、PEAK_HOURS、PAYMENT_METHODS、TREND。
             经营综合分析用 report.operating_insight；明确问数据用 report.query；产品操作指导用 product.howto_search；明确指定菜品及改价金额/比例才用 menu.update_price。
-            不得创造工具。不得依据分析自行决定价格。如果改价没有明确菜品或明确金额/比例，steps 返回空数组并填写 clarification。
+            不得创造工具。凡是会明显改变结果的信息不确定时必须澄清，包括日期范围、指标口径、菜品目标、门店/范围、改价金额或比例。
+            不得依据分析自行决定价格。如果改价没有明确菜品或明确金额/比例，必须澄清，不能生成步骤。
             dependsOn 使用之前步骤的一基序号。所有标题用中文。
             用户指令：$message
         """.trimIndent()

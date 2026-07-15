@@ -58,7 +58,23 @@ The path and body session IDs must match. The server validates a non-empty messa
 {"sessionId":"...","messageId":"...","runId":"...","status":"QUEUED"}
 ```
 
-Read steps run automatically. `menu.update_price` can only create an immutable proposal and stops in `AWAITING_CONFIRMATION`. It must never execute during message processing. Requests that ask the model to choose an unspecified price from analysis fail with `AI_CLARIFICATION_REQUIRED`.
+Read steps run automatically. `menu.update_price` can only create an immutable proposal and stops in `AWAITING_CONFIRMATION`. It must never execute during message processing.
+
+If a material parameter is uncertain, the run stops safely in `AWAITING_CLARIFICATION` before any step executes. This includes a missing report period and planner-detected ambiguity in metrics, target menu items, scope, or price adjustments. The persisted run contains:
+
+```json
+{
+  "clarification": {
+    "question": "你希望分析哪个时间范围？",
+    "options": [
+      {"id":"today","label":"今天","value":"日期范围：今天"},
+      {"id":"yesterday","label":"昨天","value":"日期范围：昨天"}
+    ]
+  }
+}
+```
+
+The Web client combines the original message with the selected option and sends it as a new message in the same session. Free text remains available when none of the choices fit. Write tools never produce a proposal from incomplete parameters.
 
 ## SSE progress and replay
 
@@ -76,10 +92,11 @@ step.completed
 step.awaiting_confirmation
 step.failed
 step.executed
+run.awaiting_clarification
 run.completed
 ```
 
-Events are persisted before they are emitted. Reconnecting with `afterSequence=N` replays all events with a larger sequence, then waits for new events until the run is terminal.
+Events are persisted before they are emitted. Reconnecting with `afterSequence=N` replays all events with a larger sequence, then waits for new events until the run is terminal. Both `COMPLETED`/`FAILED` and `AWAITING_CLARIFICATION` close the current event stream; choosing an option creates a new run.
 
 Planning can fail before a step exists. `AiWorkspaceRunDto.error` and `AiWorkspaceEventDto.error` therefore carry the same stable `{code,message,retryable}` shape used by step errors. A failed terminal event must include this error when the failure happened outside a tool step.
 

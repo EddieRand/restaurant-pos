@@ -4,6 +4,7 @@ import type {
   AiPriceProposal,
   AiWorkspaceEvidence,
   AiWorkspaceRun,
+  AiWorkspaceClarificationOption,
   AiWorkspaceStep,
 } from '../api/aiWorkspace'
 import { aiWorkspaceCopy as copy, workspaceErrorMessage } from '../i18n/aiWorkspace'
@@ -157,7 +158,7 @@ function ExecutionOnlyResult({ step }: { step: AiWorkspaceStep }) {
   )
 }
 
-export default function AiWorkspaceRunPanel({ run, liveSteps, executionByStep, executingStepId, executeErrorByStep, streamState, onExecute }: {
+export default function AiWorkspaceRunPanel({ run, liveSteps, executionByStep, executingStepId, executeErrorByStep, streamState, onExecute, onClarify, clarifying }: {
   run: AiWorkspaceRun
   liveSteps?: AiWorkspaceStep[]
   executionByStep: Record<string, AiPriceExecution>
@@ -165,13 +166,18 @@ export default function AiWorkspaceRunPanel({ run, liveSteps, executionByStep, e
   executeErrorByStep?: Record<string, { code: string; message: string; retryable: boolean }>
   streamState?: 'live' | 'reconnecting' | 'complete'
   onExecute: (step: AiWorkspaceStep, proposal: AiPriceProposal) => Promise<void>
+  onClarify: (run: AiWorkspaceRun, option: AiWorkspaceClarificationOption) => Promise<void>
+  clarifying: boolean
 }) {
-  const steps = liveSteps ?? run.steps
+  // SSE can briefly deliver a run envelope before its persisted step list is
+  // available. Treat that intermediate state as empty instead of crashing the page.
+  const steps = liveSteps ?? run.steps ?? []
   return (
     <section className="mt-3 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
       <div className="flex items-center justify-between gap-3 border-b border-gray-100 bg-gray-50/60 px-4 py-3"><p className="text-xs font-semibold text-gray-600">{copy.runResults}</p>{streamState && <span className={`flex items-center gap-1.5 text-[11px] ${streamState === 'reconnecting' ? 'text-amber-600' : streamState === 'live' ? 'text-blue-600' : 'text-emerald-600'}`}><span className={`h-1.5 w-1.5 rounded-full ${streamState === 'reconnecting' ? 'bg-amber-500' : streamState === 'live' ? 'animate-pulse bg-blue-500' : 'bg-emerald-500'}`} />{streamState === 'reconnecting' ? copy.reconnecting : streamState === 'live' ? copy.live : copy.complete}</span>}</div>
       {run.error && <div role="alert" className="border-b border-red-100 bg-red-50 p-4 text-sm text-red-700"><p className="font-semibold">{run.error.code}</p><p className="mt-1">{workspaceErrorMessage(run.error.code, run.error.message)}</p></div>}
-      {steps.length === 0 ? (!run.error && <div className="p-5 text-sm text-gray-400">{copy.noSteps}</div>) : <div className="divide-y divide-gray-100">{steps.map((step, index) => <article key={step.stepId} className="p-4 sm:p-5"><div className="mb-4 flex items-start gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600">{index + 1}</span><div className="min-w-0 flex-1"><p className="font-semibold text-gray-900">{step.displayTitle}</p><p className="mt-0.5 break-all text-[11px] text-gray-400">{step.tool}</p></div><span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${statusClass(step.status)}`}>{copy.stepStatuses[step.status]}</span></div>{step.error && <div role="alert" className="mb-3 rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-700">{workspaceErrorMessage(step.error.code, step.error.message)}</div>}<InsightResult step={step} /><QueryResult step={step} /><HowToResult step={step} /><PriceProposalResult step={step} execution={executionByStep[step.stepId]} executing={executingStepId === step.stepId} executeError={executeErrorByStep?.[step.stepId]} onExecute={onExecute} /><ExecutionOnlyResult step={step} /></article>)}</div>}
+      {run.clarification && <div className="border-b border-amber-100 bg-amber-50/70 p-4 sm:p-5"><p className="text-xs font-semibold text-amber-700">{copy.clarificationTitle}</p><p className="mt-1 text-sm font-semibold text-gray-900">{run.clarification.question}</p><div className="mt-3 flex flex-wrap gap-2">{run.clarification.options.map(option => <button key={option.id} type="button" disabled={clarifying} onClick={() => { void onClarify(run, option) }} className="rounded-xl border border-amber-200 bg-white px-4 py-2 text-sm font-medium text-gray-800 shadow-sm hover:border-brand-300 hover:text-brand-600 disabled:cursor-not-allowed disabled:opacity-50">{option.label}</button>)}</div><p className="mt-3 text-xs text-gray-500">{copy.clarificationHint}</p></div>}
+      {steps.length === 0 ? (!run.error && !run.clarification && <div className="p-5 text-sm text-gray-400">{copy.noSteps}</div>) : <div className="divide-y divide-gray-100">{steps.map((step, index) => <article key={step.stepId} className="p-4 sm:p-5"><div className="mb-4 flex items-start gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600">{index + 1}</span><div className="min-w-0 flex-1"><p className="font-semibold text-gray-900">{step.displayTitle}</p><p className="mt-0.5 break-all text-[11px] text-gray-400">{step.tool}</p></div><span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${statusClass(step.status)}`}>{copy.stepStatuses[step.status]}</span></div>{step.error && <div role="alert" className="mb-3 rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-700">{workspaceErrorMessage(step.error.code, step.error.message)}</div>}<InsightResult step={step} /><QueryResult step={step} /><HowToResult step={step} /><PriceProposalResult step={step} execution={executionByStep[step.stepId]} executing={executingStepId === step.stepId} executeError={executeErrorByStep?.[step.stepId]} onExecute={onExecute} /><ExecutionOnlyResult step={step} /></article>)}</div>}
     </section>
   )
 }

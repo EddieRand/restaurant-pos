@@ -405,6 +405,7 @@ object AiWorkspaceRunsTable : Table("ai_workspace_runs") {
     val errorCode = varchar("error_code", 64).nullable()
     val errorMessage = text("error_message").nullable()
     val errorRetryable = bool("error_retryable").default(false)
+    val clarificationJson = text("clarification_json").nullable()
     override val primaryKey = PrimaryKey(id)
 }
 
@@ -437,6 +438,7 @@ object AiWorkspaceEventsTable : Table("ai_workspace_events") {
     val errorCode = varchar("error_code", 64).nullable()
     val errorMessage = text("error_message").nullable()
     val errorRetryable = bool("error_retryable").default(false)
+    val clarificationJson = text("clarification_json").nullable()
     override val primaryKey = PrimaryKey(runId, sequence)
 }
 
