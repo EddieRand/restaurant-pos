@@ -44,7 +44,7 @@ class DatabaseAiInsightDataSource : AiInsightDataSource {
             .toList()
 
         val paymentBreakdown = payments.asSequence()
-            .filter { it[PaymentsTable.status] == "COMPLETED" }
+            .filter { it[PaymentsTable.status] in setOf("PAID", "COMPLETED") }
             .groupBy { it[PaymentsTable.method] }
             .mapValues { (_, rows) -> rows.sumOf { it[PaymentsTable.amountMinorUnit] } }
             .toSortedMap()

@@ -63,7 +63,7 @@ fun Route.adminCashierShiftRoutes() {
                             .where {
                                 (PaymentsTable.orderId inList shiftOrderIds) and
                                 (PaymentsTable.method eq "CASH") and
-                                (PaymentsTable.status eq "COMPLETED")
+                                (PaymentsTable.status inList listOf("PAID", "COMPLETED"))
                             }
                             .sumOf { it[PaymentsTable.amountMinorUnit] }
 

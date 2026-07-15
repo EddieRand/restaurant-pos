@@ -165,7 +165,9 @@ object SyncPushProcessor {
             val pay = payEl.jsonObject
             val paymentId = pay["id"]?.jsonPrimitive?.content ?: return@forEach
 
-            val amount    = pay["amountMinorUnit"]?.jsonPrimitive?.longOrNull ?: 0L
+            val amount    = pay["amountMinorUnit"]?.jsonPrimitive?.longOrNull
+                ?: pay["amount"]?.jsonPrimitive?.longOrNull
+                ?: 0L
             val method    = pay["method"]?.jsonPrimitive?.content ?: "CASH"
             val status    = pay["status"]?.jsonPrimitive?.content ?: "PAID"
             val operator  = pay["operatorId"]?.jsonPrimitive?.content ?: ""
@@ -273,7 +275,9 @@ object SyncPushProcessor {
             .singleOrNull()
 
         val orderId  = obj["orderId"]?.jsonPrimitive?.content ?: ""
-        val amount   = obj["amountMinorUnit"]?.jsonPrimitive?.longOrNull ?: 0L
+        val amount   = obj["amountMinorUnit"]?.jsonPrimitive?.longOrNull
+            ?: obj["amount"]?.jsonPrimitive?.longOrNull
+            ?: 0L
         val method   = obj["method"]?.jsonPrimitive?.content ?: "CASH"
         val status   = obj["status"]?.jsonPrimitive?.content ?: "PAID"
         val operator = obj["operatorId"]?.jsonPrimitive?.content ?: ""

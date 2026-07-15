@@ -182,6 +182,14 @@ class AdminRoutesTest {
                     it[updatedAt] = now - 1000
                 }
             }
+            PaymentsTable.insert {
+                it[id] = "rpt-payment-paid"
+                it[orderId] = "rpt-order-0"
+                it[amountMinorUnit] = 1150L
+                it[method] = "CASH"
+                it[status] = "PAID"
+                it[createdAt] = now - 500
+            }
         }
 
         val resp = c.get("/admin/reports/shift?from=0&to=${now + 1000}") {
@@ -193,6 +201,7 @@ class AdminRoutesTest {
         assertEquals(6, report.totalGuestCount)
         // grossRevenue = (1000+100+50)*3 = 3450
         assertEquals(3450L, report.grossRevenueMinorUnit)
+        assertEquals(1150L, report.paymentMethodBreakdown["CASH"])
     }
 
     // ── Orders ────────────────────────────────────────────────────────────────

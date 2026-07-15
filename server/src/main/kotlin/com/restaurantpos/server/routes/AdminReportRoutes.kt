@@ -73,7 +73,7 @@ fun Route.adminReportRoutes() {
                             .where { PaymentsTable.orderId inList orderIds }
                             .forEach { row ->
                                 when (row[PaymentsTable.status]) {
-                                    "COMPLETED" -> {
+                                    "PAID", "COMPLETED" -> {
                                         val m = row[PaymentsTable.method]
                                         breakdown[m] = (breakdown[m] ?: 0L) + row[PaymentsTable.amountMinorUnit]
                                     }
@@ -759,7 +759,7 @@ fun Route.adminReportRoutes() {
                                 val amount = row[PaymentsTable.amountMinorUnit]
                                 val agg = byMethod.getOrPut(method) { MethodAgg() }
                                 when (status) {
-                                    "COMPLETED" -> { agg.payCount++; agg.payAmount += amount }
+                                    "PAID", "COMPLETED" -> { agg.payCount++; agg.payAmount += amount }
                                     "REFUNDED"  -> { agg.refCount++; agg.refAmount += amount }
                                 }
                             }
@@ -807,7 +807,10 @@ private fun buildTrendFromLiveData(fromDate: String, toDate: String): List<Trend
     val orderIds = closedOrders.map { it[OrdersTable.id] }
     val payments = if (orderIds.isNotEmpty()) {
         PaymentsTable.selectAll()
-            .where { PaymentsTable.orderId inList orderIds and (PaymentsTable.status eq "COMPLETED") }
+            .where {
+                (PaymentsTable.orderId inList orderIds) and
+                    (PaymentsTable.status inList listOf("PAID", "COMPLETED"))
+            }
             .toList()
     } else emptyList()
 
@@ -875,7 +878,7 @@ private fun regenerateSnapshots(fromDate: String, toDate: String): Int {
                 .where { PaymentsTable.orderId inList orderIds }
                 .toList()
         } else emptyList()
-        val payments = allPayments.filter { it[PaymentsTable.status] == "COMPLETED" }
+        val payments = allPayments.filter { it[PaymentsTable.status] in setOf("PAID", "COMPLETED") }
         val refundsTotal = allPayments.filter { it[PaymentsTable.status] == "REFUNDED" }
             .sumOf { it[PaymentsTable.amountMinorUnit] }
 
