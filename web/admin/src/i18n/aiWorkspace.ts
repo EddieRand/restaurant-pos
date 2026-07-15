@@ -32,6 +32,7 @@ export const aiWorkspaceCopy = {
   periodHint: '直接描述你的需求；关键信息不明确时，AI 会先提供选项请你确认。',
   clarificationTitle: '需要你确认一项信息',
   clarificationHint: '选择后，AI 将带着原始请求继续处理。',
+  clarificationAnswered: '已确认，后续处理记录见下方。',
   user: '你',
   assistant: 'AI 助手',
   runResults: '执行过程',
