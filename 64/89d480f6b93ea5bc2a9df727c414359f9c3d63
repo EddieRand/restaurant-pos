@@ -1,0 +1,49 @@
+web/admin/src/App.tsx
+  s_1c80a6f4eb339d::t_7f8504946cd51c 8,40
+web/admin/src/api/aiPrice.ts
+  s_1c80a6f4eb339d::t_b9c7aba28021e7 1-95
+web/admin/src/api/client.ts
+  s_1c80a6f4eb339d::t_0260e7fee25f68 24-26
+web/admin/src/components/Layout.tsx
+  s_1c80a6f4eb339d::t_4cd8a51d43fa04 17-21,105
+web/admin/src/i18n/aiPrice.ts
+  s_1c80a6f4eb339d::t_9ff1a1705d5b16 1-142
+web/admin/src/i18n/locales/ar-SA.ts
+  s_1c80a6f4eb339d::t_56b48032c51b0c 7
+web/admin/src/i18n/locales/en-US.ts
+  s_1c80a6f4eb339d::t_dbba3cad619b12 7
+web/admin/src/i18n/locales/ja-JP.ts
+  s_1c80a6f4eb339d::t_4577e7e297c916 7
+web/admin/src/i18n/locales/ko-KR.ts
+  s_1c80a6f4eb339d::t_48bfc264012c6e 7
+web/admin/src/i18n/locales/ms-MY.ts
+  s_1c80a6f4eb339d::t_996e90c320129d 7
+web/admin/src/i18n/locales/th-TH.ts
+  s_1c80a6f4eb339d::t_634ca24b6760c6 7
+web/admin/src/i18n/locales/vi-VN.ts
+  s_1c80a6f4eb339d::t_a9be2b6d6bab68 7
+web/admin/src/i18n/locales/zh-CN.ts
+  s_1c80a6f4eb339d::t_b3dbfb2105575b 5
+web/admin/src/i18n/locales/zh-TW.ts
+  s_1c80a6f4eb339d::t_9dbc4b0e094cc4 7
+web/admin/src/pages/AiPriceConsolePage.tsx
+  s_1c80a6f4eb339d::t_115eb9c5eb1ae5 1-334
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "6489d480f6b93ea5bc2a9df727c414359f9c3d63",
+  "prompts": {},
+  "sessions": {
+    "s_1c80a6f4eb339d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1a255ba6-873e-4a8d-ba13-d703ff828bfb",
+        "model": "unknown"
+      },
+      "human_author": "EddieRand <EddieRand@users.noreply.github.com>"
+    }
+  },
+  "attestation_metadata": {},
+  "remote_transcripts": {}
+}
