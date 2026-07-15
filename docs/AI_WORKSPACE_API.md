@@ -81,6 +81,8 @@ run.completed
 
 Events are persisted before they are emitted. Reconnecting with `afterSequence=N` replays all events with a larger sequence, then waits for new events until the run is terminal.
 
+Planning can fail before a step exists. `AiWorkspaceRunDto.error` and `AiWorkspaceEventDto.error` therefore carry the same stable `{code,message,retryable}` shape used by step errors. A failed terminal event must include this error when the failure happened outside a tool step.
+
 ## Step results
 
 Every step has one typed result in `AiWorkspaceStepResultDto`:

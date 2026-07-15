@@ -144,6 +144,7 @@ data class AiWorkspaceRunDto(
     val createdAt: Long,
     val completedAt: Long? = null,
     val steps: List<AiWorkspaceStepDto> = emptyList(),
+    val error: AiWorkspaceStepErrorDto? = null,
 )
 
 @Serializable
@@ -181,6 +182,7 @@ data class AiWorkspaceEventDto(
     val runId: String,
     val step: AiWorkspaceStepDto? = null,
     val runStatus: String? = null,
+    val error: AiWorkspaceStepErrorDto? = null,
 )
 
 @Serializable
