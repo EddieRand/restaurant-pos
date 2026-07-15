@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR Ordering</title>
+    <!-- 无障碍支持 -->
+    <meta name="theme-color" content="#f05a28" />
+    <meta name="description" content="Restaurant QR code ordering system" />
+  </head>
+  <body>
+    <!-- 跳过导航链接（无障碍） -->
+    <a href="#main-content" class="skip-nav">跳到主要内容 / Skip to main content</a>
+    
+    <div id="app"></div>
+    
+    <!-- ARIA Live 区域（屏幕阅读器播报） -->
+    <div id="live-region" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+    <div id="live-region-assertive" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+    
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

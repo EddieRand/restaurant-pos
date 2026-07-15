@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auth_title">员工登录</string>
+    <string name="auth_permission_required">需要权限</string>
+    <string name="auth_supervisor_pin_prompt">执行"%1$s"需要主管 PIN 码授权</string>
+    <string name="auth_cancel">取消</string>
+    <string name="auth_logout">退出登录</string>
+    <string name="auth_invalid_pin">PIN 码错误，请重试</string>
+    <string name="auth_user_inactive">该账户已停用</string>
+</resources>

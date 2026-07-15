@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tables_title">桌台</string>
+    <string name="tables_takeaway">外带</string>
+    <string name="tables_tab_floor">餐厅</string>
+    <string name="tables_tab_reservations">预订</string>
+    <string name="tables_new_reservation">新建预订</string>
+    <string name="tables_seat_action">开台</string>
+    <string name="tables_reservation_guest_name">宾客姓名</string>
+    <string name="tables_reservation_guest_count">人数</string>
+    <string name="tables_reservation_time">时间 (HH:mm)</string>
+    <string name="tables_reservation_table">桌号</string>
+    <string name="tables_cancel">取消</string>
+    <string name="tables_cancel_reservation">取消预订</string>
+    <string name="tables_create">创建</string>
+    <string name="takeaway_queue_title">外带 / 外卖队列</string>
+    <string name="takeaway_queue_empty">暂无进行中的外带订单</string>
+    <string name="tables_guest_count_title">几位用餐？</string>
+    <string name="tables_guest_count_label">用餐人数</string>
+    <string name="tables_seat">开台</string>
+    <string name="transfer_pick_target">请点击一张空闲桌台以完成移桌</string>
+    <string name="transfer_error_title">移桌失败</string>
+    <string name="pickup_display_title">取餐叫号</string>
+    <string name="pickup_display_empty">暂无可取餐订单</string>
+    <!-- 桌台瓦片 + 预订状态（重皮） -->
+    <string name="tbl_status_available">空闲</string>
+    <string name="tbl_status_occupied">已占用</string>
+    <string name="tbl_status_ordered">已下单</string>
+    <string name="tbl_status_checkout">结账中</string>
+    <string name="tbl_status_dirty">待清理</string>
+    <string name="tbl_status_reserved">已预订</string>
+    <string name="tbl_next_fmt">下一场 %1$s</string>
+    <string name="res_status_confirmed">已确认</string>
+    <string name="res_status_seated">已入座</string>
+    <string name="res_status_no_show">未到</string>
+    <string name="res_status_cancelled">已取消</string>
+    <!-- 平面图重建 -->
+    <string name="tbl_add_table">添加桌台</string>
+    <string name="tbl_more">更多</string>
+    <string name="tbl_area_all">全部区域</string>
+    <string name="tbl_view_floor_plan">平面图</string>
+    <string name="tbl_main_entrance">大门入口</string>
+    <string name="tbl_bar">吧台</string>
+    <string name="tbl_seats_fmt">%1$d 座</string>
+    <string name="tbl_open_for">已开台 %1$s</string>
+    <string name="tbl_guests_label">客数</string>
+    <string name="tbl_customer_label">顾客</string>
+    <string name="tbl_current_order">当前订单</string>
+    <string name="tbl_subtotal">小计</string>
+    <string name="tbl_tax">税</string>
+    <string name="tbl_service">服务费</string>
+    <string name="tbl_total">合计</string>
+    <string name="tbl_select_hint">选择桌台查看详情</string>
+    <string name="tbl_more_items">+%1$d 项</string>
+    <string name="tbl_open_order">打开订单</string>
+    <string name="tbl_transfer">转台</string>
+    <string name="tbl_merge">并台</string>
+    <string name="tbl_split">拆台</string>
+    <string name="tbl_reserve">预订</string>
+    <string name="tbl_add_notes">添加备注</string>
+    <string name="tbl_start_checkout">去结账</string>
+    <string name="tbl_quick_reserve">快速预订</string>
+    <string name="tbl_waitlist">候位</string>
+    <string name="tbl_walk_in">散客入座</string>
+    <string name="tbl_table_settings">桌台设置</string>
+    <string name="tbl_walkin">散客</string>
+    <!-- 详情面板状态 -->
+    <string name="tbl_detail_available_hint">桌台空闲</string>
+    <string name="tbl_detail_dirty_hint">需要清理</string>
+    <string name="tbl_detail_billing_hint">支付进行中</string>
+    <string name="tbl_detail_clear_table">标记为空闲</string>
+    <string name="tbl_detail_reserved_for">为 %1$s 预订</string>
+    <string name="tbl_detail_reserved_time">今天 %1$s</string>
+    <string name="tbl_detail_reservation_cancel">取消预订</string>
+    <string name="tbl_detail_seat_now">立即入座</string>
+    <!-- 散客开台 -->
+    <string name="tbl_walkin_title">散客开台</string>
+    <string name="tbl_walkin_name">顾客姓名（选填）</string>
+    <string name="tbl_walkin_seat">立即开台</string>
+    <string name="tbl_walkin_table_hint">选择桌台</string>
+    <!-- 候位 -->
+    <string name="tbl_waitlist_title">候位列表</string>
+    <string name="tbl_waitlist_empty">暂无候位</string>
+    <string name="tbl_waitlist_add">加入候位</string>
+    <string name="tbl_waitlist_name">姓名</string>
+    <string name="tbl_waitlist_count">人数</string>
+    <string name="tbl_waitlist_waiting">已等候 %1$s 分钟</string>
+    <string name="tbl_waitlist_remove">移除</string>
+    <string name="tbl_waitlist_seat">安排入座</string>
+    <!-- 并台 -->
+    <string name="tbl_merge_title">并台</string>
+    <string name="tbl_merge_hint">选择要合并的桌台</string>
+    <string name="tbl_merge_confirm">合并</string>
+    <string name="tbl_merge_no_targets">该区域无可合并桌台</string>
+    <!-- 拆台 -->
+    <string name="tbl_split_title">拆台</string>
+    <string name="tbl_split_hint">选择要移出的菜品</string>
+    <string name="tbl_split_confirm">拆分</string>
+    <string name="tbl_split_target">目标桌台</string>
+    <string name="tbl_split_select_target">选择目标桌台</string>
+    <!-- 备注 -->
+    <string name="tbl_notes_title">桌台备注</string>
+    <string name="tbl_notes_label">订单备注</string>
+    <string name="tbl_notes_save">保存</string>
+    <string name="tbl_notes_hint">过敏信息、特殊需求、VIP备注…</string>
+    <!-- 添加桌台 -->
+    <string name="tbl_add_table_title">添加桌台</string>
+    <string name="tbl_add_table_name">桌台名称</string>
+    <string name="tbl_add_table_section">区域</string>
+    <string name="tbl_add_table_capacity">座位数</string>
+    <string name="tbl_add_table_new_area">新区域</string>
+    <string name="tbl_add_table_add">添加</string>
+    <!-- 搜索筛选 -->
+    <string name="tbl_search_hint">搜索桌台…</string>
+    <string name="tbl_search_empty">无匹配桌台</string>
+    <string name="tbl_search_clear">清除搜索</string>
+    <!-- 状态处理 -->
+    <string name="tbl_error_load">加载桌台失败</string>
+    <string name="tbl_error_retry">重试</string>
+    <string name="tbl_empty_area">该区域无桌台</string>
+    <string name="tbl_empty_status">无此状态桌台</string>
+    <string name="tbl_empty_all">未配置桌台</string>
+    <string name="tbl_offline_banner">当前离线。恢复连接后将同步更改。</string>
+    <!-- 页眉 -->
+    <string name="tbl_search_tables">搜索桌台</string>
+    <string name="tbl_scan">扫码</string>
+    <string name="tbl_add_customer">添加顾客</string>
+    <string name="tbl_dine_in">堂食</string>
+    <string name="tbl_table_12">12 号桌</string>
+    <string name="tbl_view_floor_plan_label">视图: 平面图</string>
+</resources>

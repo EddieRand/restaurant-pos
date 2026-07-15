@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tableside Order</string>
+    <string name="pad_not_configured">PAD Not Configured</string>
+    <string name="pad_my_orders">My Orders</string>
+    <string name="pad_no_orders">No orders yet</string>
+    <string name="pad_continue_without_package">Continue without a package</string>
+    <string name="pad_per_person">per person</string>
+    <string name="pad_select">Select</string>
+    <string name="pad_sold_out">SOLD OUT</string>
+    <string name="pad_your_order">Your Order</string>
+    <string name="pad_cart_empty">Your cart is empty</string>
+    <string name="pad_subtotal">Subtotal</string>
+    <string name="pad_call_waiter">Call Waiter</string>
+</resources>

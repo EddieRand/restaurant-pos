@@ -1,0 +1,20 @@
+# Android build outputs
+app/*/build/
+core/*/build/
+feature/*/build/
+build/
+.gradle/
+
+# Node
+web/admin/node_modules/
+web/admin/dist/
+
+# Local config (never baked into image)
+local.properties
+.env
+*.env.local
+
+# IDE / OS
+.idea/
+.DS_Store
+*.iml

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="cust_title">顾客</string>
+    <string name="cust_search_hint">搜索姓名或电话</string>
+    <string name="cust_add">添加顾客</string>
+    <string name="cust_empty">暂无顾客</string>
+    <string name="cust_select_hint">请选择顾客</string>
+    <string name="cust_phone">电话</string>
+    <string name="cust_email">邮箱</string>
+    <string name="cust_birthday">生日</string>
+    <string name="cust_member_since">入会时间</string>
+    <string name="cust_last_visit">最近到店</string>
+    <string name="cust_points">积分</string>
+    <string name="cust_visits">到店次数</string>
+    <string name="cust_spent">累计消费</string>
+    <string name="cust_recent_activity">近期动态</string>
+    <string name="cust_no_activity">暂无积分动态</string>
+    <string name="cust_tier_member">会员</string>
+    <string name="cust_tier_gold">金卡</string>
+    <string name="cust_tier_silver">银卡</string>
+    <string name="cust_tier_bronze">铜卡</string>
+    <!-- 顾客重建（表格 + 详情） -->
+    <string name="cust_subtitle">管理顾客资料并查看历史。</string>
+    <string name="cust_tab_all">全部顾客</string>
+    <string name="cust_tab_recent">最近</string>
+    <string name="cust_tab_loyal">忠实顾客</string>
+    <string name="cust_total">共 %1$d 位顾客</string>
+    <string name="cust_col_customer">顾客</string>
+    <string name="cust_col_phone">电话</string>
+    <string name="cust_col_email">邮箱</string>
+    <string name="cust_col_spent">累计消费</string>
+    <string name="cust_col_visits">到店</string>
+    <string name="cust_col_last_visit">最近到店</string>
+    <string name="cust_customer_since">入会于 %1$s</string>
+    <string name="cust_avg_spend">平均消费</string>
+    <string name="cust_recent_orders">最近订单</string>
+    <string name="cust_view_all">查看全部</string>
+    <string name="cust_notes_title">顾客备注</string>
+    <string name="cust_add_note">添加备注</string>
+    <string name="cust_add_tag">添加标签</string>
+    <string name="cust_edit">编辑顾客</string>
+    <string name="cust_new_order">新建订单</string>
+    <string name="cust_badge_vip">VIP</string>
+    <string name="cust_badge_new">新客</string>
+</resources>

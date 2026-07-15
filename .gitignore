@@ -1,0 +1,26 @@
+*.iml
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+**/build/
+**/.kotlin/
+web/admin/dist/
+**/dist/
+**/node_modules/
+/.gradle-home/
+/gradle-*-bin.zip
+
+# Docker / deployment secrets
+.env
+*.env.local
+deploy/certs/
+
+# Agent/session scratch dir
+/.tmp/
+/.claude/worktrees/

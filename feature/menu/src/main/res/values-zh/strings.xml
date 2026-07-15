@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="menu_title">菜单管理</string>
+    <string name="menu_add_item">添加菜品</string>
+    <string name="menu_new_item">新菜品</string>
+    <string name="menu_edit">编辑</string>
+    <string name="menu_save">保存</string>
+    <string name="menu_cancel">取消</string>
+    <string name="menu_sold_out">沽清</string>
+    <string name="menu_mark_sold_out">标记沽清</string>
+    <string name="menu_name_en">名称（英文）</string>
+    <string name="menu_name_zh">名称（中文）</string>
+    <string name="menu_price">价格</string>
+    <string name="menu_category">分类 ID</string>
+    <string name="menu_tax_rate">税率</string>
+    <string name="menu_no_tax">免税</string>
+    <string name="menu_select">多选</string>
+    <string name="menu_select_all">全选</string>
+    <string name="menu_select_sold_out">选择沽清</string>
+    <string name="menu_clear_all_sold_out">清空沽清（%d）</string>
+    <string name="menu_bulk_sold_out">标记沽清</string>
+    <string name="menu_bulk_restore">恢复供应</string>
+    <string name="menu_allergens">过敏原</string>
+    <string name="menu_selected_count">已选 %1$d / %2$d</string>
+    <!-- 分类标签（与 feature:order cat_* 保持一致） -->
+    <string name="cat_mains">主食</string>
+    <string name="cat_starters">小食</string>
+    <string name="cat_drinks">饮料</string>
+    <string name="cat_desserts">甜点</string>
+    <string name="cat_breakfast">早餐</string>
+    <string name="cat_lunch">午餐</string>
+    <string name="cat_dinner">晚餐</string>
+    <!-- 菜单管理重建 -->
+    <string name="menu_subtitle">管理菜品、分类与价格。</string>
+    <string name="menu_tab_menu_items">菜品</string>
+    <string name="menu_tab_categories">分类</string>
+    <string name="menu_tab_modifier_groups">修饰组</string>
+    <string name="menu_tab_modifiers">修饰项</string>
+    <string name="menu_tab_combo_meals">套餐</string>
+    <string name="menu_filter_category">分类</string>
+    <string name="menu_filter_status">全部状态</string>
+    <string name="menu_filter_dayparts">全部餐段</string>
+    <string name="menu_import_export">导入 / 导出</string>
+    <string name="menu_total_items">共 %1$d 个菜品</string>
+    <string name="menu_active">在售</string>
+    <string name="menu_dtab_details">详情</string>
+    <string name="menu_dtab_pricing">价格</string>
+    <string name="menu_dtab_modifiers">修饰</string>
+    <string name="menu_dtab_availability">供应</string>
+    <string name="menu_dtab_history">历史</string>
+    <string name="menu_kitchen">出品厨房</string>
+    <string name="menu_tags">标签</string>
+    <string name="menu_image">图片</string>
+    <string name="menu_available">在售</string>
+    <string name="menu_track_inventory">库存跟踪</string>
+    <string name="menu_delete_item">删除菜品</string>
+    <string name="menu_save_changes">保存修改</string>
+    <string name="menu_select_item_hint">选择菜品查看详情</string>
+    <string name="menu_id_fmt">编号：%1$s</string>
+    <string name="menu_description">描述</string>
+</resources>

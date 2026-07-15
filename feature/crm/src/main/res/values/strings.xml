@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="cust_title">Customers</string>
+    <string name="cust_search_hint">Search name or phone</string>
+    <string name="cust_add">Add customer</string>
+    <string name="cust_empty">No customers yet</string>
+    <string name="cust_select_hint">Select a customer</string>
+    <string name="cust_phone">Phone</string>
+    <string name="cust_email">Email</string>
+    <string name="cust_birthday">Birthday</string>
+    <string name="cust_member_since">Member since</string>
+    <string name="cust_last_visit">Last visit</string>
+    <string name="cust_points">Points</string>
+    <string name="cust_visits">Visits</string>
+    <string name="cust_spent">Spent</string>
+    <string name="cust_recent_activity">Recent activity</string>
+    <string name="cust_no_activity">No loyalty activity yet</string>
+    <string name="cust_tier_member">Member</string>
+    <string name="cust_tier_gold">Gold</string>
+    <string name="cust_tier_silver">Silver</string>
+    <string name="cust_tier_bronze">Bronze</string>
+    <!-- Customers rebuild (table + detail) -->
+    <string name="cust_subtitle">Manage your customer database and view their history.</string>
+    <string name="cust_tab_all">All Customers</string>
+    <string name="cust_tab_recent">Recent</string>
+    <string name="cust_tab_loyal">Loyal Customers</string>
+    <string name="cust_total">Total %1$d customers</string>
+    <string name="cust_col_customer">Customer</string>
+    <string name="cust_col_phone">Phone</string>
+    <string name="cust_col_email">Email</string>
+    <string name="cust_col_spent">Total Spent</string>
+    <string name="cust_col_visits">Visits</string>
+    <string name="cust_col_last_visit">Last Visit</string>
+    <string name="cust_customer_since">Customer since %1$s</string>
+    <string name="cust_avg_spend">Avg Spend</string>
+    <string name="cust_recent_orders">Recent Orders</string>
+    <string name="cust_view_all">View All</string>
+    <string name="cust_notes_title">Customer Notes</string>
+    <string name="cust_add_note">Add Note</string>
+    <string name="cust_add_tag">Add tag</string>
+    <string name="cust_edit">Edit Customer</string>
+    <string name="cust_new_order">New Order</string>
+    <string name="cust_badge_vip">VIP</string>
+    <string name="cust_badge_new">New</string>
+</resources>

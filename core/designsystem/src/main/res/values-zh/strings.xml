@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync_status_offline">离线</string>
+    <string name="sync_status_syncing">同步中</string>
+    <string name="sync_status_synced">已同步</string>
+    <string name="offline_banner_message">离线模式 - 订单将在恢复网络后自动同步</string>
+    <string name="offline_banner_pending">待同步: %1$d</string>
+</resources>

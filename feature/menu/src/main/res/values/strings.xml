@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="menu_title">Menu Management</string>
+    <string name="menu_add_item">Add Item</string>
+    <string name="menu_new_item">New Item</string>
+    <string name="menu_edit">Edit</string>
+    <string name="menu_save">Save</string>
+    <string name="menu_cancel">Cancel</string>
+    <string name="menu_sold_out">Sold Out</string>
+    <string name="menu_mark_sold_out">Mark Sold Out</string>
+    <string name="menu_name_en">Name (English)</string>
+    <string name="menu_name_zh">Name (Chinese)</string>
+    <string name="menu_price">Price</string>
+    <string name="menu_category">Category ID</string>
+    <string name="menu_tax_rate">Tax Rate</string>
+    <string name="menu_no_tax">No Tax</string>
+    <string name="menu_select">Select Items</string>
+    <string name="menu_select_all">Select All</string>
+    <string name="menu_select_sold_out">Select Sold Out</string>
+    <string name="menu_clear_all_sold_out">Clear Sold Out (%d)</string>
+    <string name="menu_bulk_sold_out">Mark Sold Out</string>
+    <string name="menu_bulk_restore">Restore</string>
+    <string name="menu_allergens">Allergens</string>
+    <string name="menu_selected_count">%1$d / %2$d selected</string>
+    <!-- Category labels (kept in sync with feature:order cat_* for cross-screen consistency) -->
+    <string name="cat_mains">Mains</string>
+    <string name="cat_starters">Starters</string>
+    <string name="cat_drinks">Drinks</string>
+    <string name="cat_desserts">Desserts</string>
+    <string name="cat_breakfast">Breakfast</string>
+    <string name="cat_lunch">Lunch</string>
+    <string name="cat_dinner">Dinner</string>
+    <!-- Menu management rebuild -->
+    <string name="menu_subtitle">Manage your menu items, categories and pricing.</string>
+    <string name="menu_tab_menu_items">Menu Items</string>
+    <string name="menu_tab_categories">Categories</string>
+    <string name="menu_tab_modifier_groups">Modifier Groups</string>
+    <string name="menu_tab_modifiers">Modifiers</string>
+    <string name="menu_tab_combo_meals">Combo Meals</string>
+    <string name="menu_filter_category">Category</string>
+    <string name="menu_filter_status">All Status</string>
+    <string name="menu_filter_dayparts">All Day Parts</string>
+    <string name="menu_import_export">Import / Export</string>
+    <string name="menu_total_items">Total %1$d items</string>
+    <string name="menu_active">Active</string>
+    <string name="menu_dtab_details">Details</string>
+    <string name="menu_dtab_pricing">Pricing</string>
+    <string name="menu_dtab_modifiers">Modifiers</string>
+    <string name="menu_dtab_availability">Availability</string>
+    <string name="menu_dtab_history">History</string>
+    <string name="menu_kitchen">Kitchen</string>
+    <string name="menu_tags">Tags</string>
+    <string name="menu_image">Image</string>
+    <string name="menu_available">Available</string>
+    <string name="menu_track_inventory">Track Inventory</string>
+    <string name="menu_delete_item">Delete Item</string>
+    <string name="menu_save_changes">Save Changes</string>
+    <string name="menu_select_item_hint">Select an item to view details</string>
+    <string name="menu_id_fmt">ID: %1$s</string>
+    <string name="menu_description">Description</string>
+</resources>

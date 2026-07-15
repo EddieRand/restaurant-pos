@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tables_title">Tables</string>
+    <string name="tables_takeaway">Takeaway</string>
+    <string name="tables_tab_floor">Floor</string>
+    <string name="tables_tab_reservations">Reservations</string>
+    <string name="tables_new_reservation">New Reservation</string>
+    <string name="tables_seat_action">Seat</string>
+    <string name="tables_reservation_guest_name">Guest Name</string>
+    <string name="tables_reservation_guest_count">Guests</string>
+    <string name="tables_reservation_time">Time (HH:mm)</string>
+    <string name="tables_reservation_table">Table</string>
+    <string name="tables_cancel">Cancel</string>
+    <string name="tables_cancel_reservation">Cancel Reservation</string>
+    <string name="tables_create">Create</string>
+    <string name="takeaway_queue_title">Takeaway / Delivery Queue</string>
+    <string name="takeaway_queue_empty">No active takeaway orders</string>
+    <string name="tables_guest_count_title">How many guests?</string>
+    <string name="tables_guest_count_label">Guest count</string>
+    <string name="tables_seat">Seat</string>
+    <string name="transfer_pick_target">Tap an available table to transfer the order there</string>
+    <string name="transfer_error_title">Transfer Failed</string>
+    <string name="pickup_display_title">Ready for Pickup</string>
+    <string name="pickup_display_empty">No orders ready yet</string>
+    <!-- Floor tile + reservation status (reskin) -->
+    <string name="tbl_status_available">Available</string>
+    <string name="tbl_status_occupied">Occupied</string>
+    <string name="tbl_status_ordered">Ordered</string>
+    <string name="tbl_status_checkout">Checkout</string>
+    <string name="tbl_status_dirty">Dirty</string>
+    <string name="tbl_status_reserved">Reserved</string>
+    <string name="tbl_next_fmt">Next %1$s</string>
+    <string name="res_status_confirmed">Confirmed</string>
+    <string name="res_status_seated">Seated</string>
+    <string name="res_status_no_show">No show</string>
+    <string name="res_status_cancelled">Cancelled</string>
+    <!-- Floor plan rebuild -->
+    <string name="tbl_add_table">Add Table</string>
+    <string name="tbl_more">More</string>
+    <string name="tbl_area_all">All Areas</string>
+    <string name="tbl_view_floor_plan">Floor Plan</string>
+    <string name="tbl_main_entrance">Main Entrance</string>
+    <string name="tbl_bar">BAR</string>
+    <string name="tbl_seats_fmt">%1$d seats</string>
+    <string name="tbl_open_for">Open for %1$s</string>
+    <string name="tbl_guests_label">Guests</string>
+    <string name="tbl_customer_label">Customer</string>
+    <string name="tbl_current_order">Current Order</string>
+    <string name="tbl_subtotal">Subtotal</string>
+    <string name="tbl_tax">Tax</string>
+    <string name="tbl_service">Service charge</string>
+    <string name="tbl_total">Total</string>
+    <string name="tbl_select_hint">Select a table to view details</string>
+    <string name="tbl_more_items">+%1$d more items</string>
+    <string name="tbl_open_order">Open Order</string>
+    <string name="tbl_transfer">Transfer Table</string>
+    <string name="tbl_merge">Merge Tables</string>
+    <string name="tbl_split">Split Table</string>
+    <string name="tbl_reserve">Reserve</string>
+    <string name="tbl_add_notes">Add Notes</string>
+    <string name="tbl_start_checkout">Start Checkout</string>
+    <string name="tbl_quick_reserve">Quick Reserve</string>
+    <string name="tbl_waitlist">Waitlist</string>
+    <string name="tbl_walk_in">Walk-In</string>
+    <string name="tbl_table_settings">Table Settings</string>
+    <string name="tbl_walkin">Walk-in</string>
+    <!-- Detail panel status variants -->
+    <string name="tbl_detail_available_hint">Table is available</string>
+    <string name="tbl_detail_dirty_hint">Needs cleaning</string>
+    <string name="tbl_detail_billing_hint">Payment in progress</string>
+    <string name="tbl_detail_clear_table">Mark Available</string>
+    <string name="tbl_detail_reserved_for">Reserved for %1$s</string>
+    <string name="tbl_detail_reserved_time">Today at %1$s</string>
+    <string name="tbl_detail_reservation_cancel">Cancel Reservation</string>
+    <string name="tbl_detail_seat_now">Seat Now</string>
+    <!-- Walk-in dialog -->
+    <string name="tbl_walkin_title">Walk-In</string>
+    <string name="tbl_walkin_name">Guest name (optional)</string>
+    <string name="tbl_walkin_seat">Seat Now</string>
+    <string name="tbl_walkin_table_hint">Select table</string>
+    <!-- Waitlist -->
+    <string name="tbl_waitlist_title">Waitlist</string>
+    <string name="tbl_waitlist_empty">No parties waiting</string>
+    <string name="tbl_waitlist_add">Add to Waitlist</string>
+    <string name="tbl_waitlist_name">Name</string>
+    <string name="tbl_waitlist_count">Party</string>
+    <string name="tbl_waitlist_waiting">Waiting %1$s min</string>
+    <string name="tbl_waitlist_remove">Remove</string>
+    <string name="tbl_waitlist_seat">Seat</string>
+    <!-- Merge dialog -->
+    <string name="tbl_merge_title">Merge Tables</string>
+    <string name="tbl_merge_hint">Select a table to merge with</string>
+    <string name="tbl_merge_confirm">Merge</string>
+    <string name="tbl_merge_no_targets">No mergeable tables in this area</string>
+    <!-- Split dialog -->
+    <string name="tbl_split_title">Split Table</string>
+    <string name="tbl_split_hint">Select items to move to another table</string>
+    <string name="tbl_split_confirm">Split</string>
+    <string name="tbl_split_target">Target table</string>
+    <string name="tbl_split_select_target">Select target table</string>
+    <!-- Notes dialog -->
+    <string name="tbl_notes_title">Table Notes</string>
+    <string name="tbl_notes_label">Order notes</string>
+    <string name="tbl_notes_save">Save</string>
+    <string name="tbl_notes_hint">Allergies, special requests, VIP notes…</string>
+    <!-- Add Table dialog -->
+    <string name="tbl_add_table_title">Add Table</string>
+    <string name="tbl_add_table_name">Table name</string>
+    <string name="tbl_add_table_section">Area</string>
+    <string name="tbl_add_table_capacity">Seats</string>
+    <string name="tbl_add_table_new_area">New Area</string>
+    <string name="tbl_add_table_add">Add</string>
+    <!-- Search & filter -->
+    <string name="tbl_search_hint">Search tables…</string>
+    <string name="tbl_search_empty">No tables match your search</string>
+    <string name="tbl_search_clear">Clear search</string>
+    <!-- States -->
+    <string name="tbl_error_load">Could not load tables</string>
+    <string name="tbl_error_retry">Retry</string>
+    <string name="tbl_empty_area">No tables in this area</string>
+    <string name="tbl_empty_status">No tables with this status</string>
+    <string name="tbl_empty_all">No tables configured</string>
+    <string name="tbl_offline_banner">You are offline. Changes will sync when connected.</string>
+    <!-- Header -->
+    <string name="tbl_search_tables">Search tables</string>
+    <string name="tbl_scan">Scan</string>
+    <string name="tbl_add_customer">Add customer</string>
+    <string name="tbl_dine_in">Dine In</string>
+    <string name="tbl_table_12">Table 12</string>
+    <string name="tbl_view_floor_plan_label">View: Floor Plan</string>
+</resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auth_title">Staff Login</string>
+    <string name="auth_permission_required">Permission Required</string>
+    <string name="auth_supervisor_pin_prompt">A supervisor PIN is required to: %1$s</string>
+    <string name="auth_cancel">Cancel</string>
+    <string name="auth_logout">Log Out</string>
+    <string name="clockin_title">Clock In</string>
+    <string name="clockin_confirm">Clock In Now</string>
+    <string name="clockin_cancel">Skip</string>
+    <string name="auth_invalid_pin">Incorrect PIN. Please try again.</string>
+    <string name="auth_user_inactive">This account is inactive.</string>
+</resources>

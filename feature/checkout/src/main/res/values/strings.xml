@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="checkout_title">Checkout</string>
+    <string name="checkout_subtotal">Subtotal</string>
+    <string name="checkout_tax">Tax</string>
+    <string name="checkout_service_charge">Service Charge</string>
+    <string name="checkout_discount">Discount</string>
+    <string name="checkout_total">Total</string>
+    <string name="checkout_paid">Paid</string>
+    <string name="checkout_remaining">Remaining</string>
+    <string name="checkout_pay_cash">Cash</string>
+    <string name="checkout_pay_card">Card</string>
+    <string name="checkout_pay_qr">QR Code</string>
+    <string name="checkout_split">Split Bill</string>
+    <string name="checkout_split_parties">Split %d ways</string>
+    <string name="checkout_refund">Refund</string>
+    <string name="checkout_apply">Apply</string>
+    <string name="checkout_discount_label">Discount Amount</string>
+    <string name="checkout_service_charge_label">Service Charge</string>
+    <string name="checkout_payment_history">Payment History</string>
+    <!-- Permission denied -->
+    <string name="permission_denied_title">Permission Required</string>
+    <string name="permission_denied_body">You do not have permission to: %1$s. Please ask a supervisor.</string>
+    <string name="permission_denied_ok">OK</string>
+    <string name="checkout_tip">Tip</string>
+    <string name="checkout_tip_label">Tip</string>
+    <string name="checkout_tip_custom">Custom</string>
+    <string name="checkout_tip_no_tip">No tip</string>
+    <string name="checkout_coupon_label">Coupon Code</string>
+    <string name="checkout_coupon_hint">Enter code…</string>
+    <string name="checkout_coupon_apply">Apply</string>
+    <string name="checkout_coupon_applied">Coupon applied: %1$s</string>
+    <string name="checkout_gift_card_label">Gift Card Code</string>
+    <string name="checkout_gift_card_hint">Enter code…</string>
+    <string name="checkout_gift_card_pay">Pay with Gift Card</string>
+    <string name="checkout_gift_card_offline_hint">Requires network connection</string>
+    <string name="checkout_print_error">Print Error</string>
+    <string name="checkout_ok">OK</string>
+    <string name="checkout_reprint_receipt">Reprint Receipt</string>
+    <string name="checkout_member_phone">Member Phone</string>
+    <string name="checkout_member_phone_hint">e.g. 0412 345 678</string>
+    <string name="checkout_member_find">Find</string>
+    <string name="checkout_member_clear">Clear</string>
+    <string name="checkout_tip_prompt">Customer is choosing a tip on the display.</string>
+    <string name="checkout_continue_payment">Continue to payment</string>
+    <string name="checkout_payment_successful">Payment successful</string>
+    <string name="checkout_send_receipt">Send receipt</string>
+    <string name="checkout_receipt_step">Receipt</string>
+    <string name="checkout_receipt_prompt">Customer is choosing how to receive their receipt.</string>
+    <string name="checkout_done">Done</string>
+</resources>

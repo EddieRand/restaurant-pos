@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Restaurant POS</string>
+    <!-- Sidebar navigation -->
+    <string name="nav_pos">POS</string>
+    <string name="nav_orders">Orders</string>
+    <string name="nav_tables">Tables</string>
+    <string name="nav_customers">Customers</string>
+    <string name="nav_menu">Menu</string>
+    <string name="nav_discounts">Discounts</string>
+    <string name="nav_reports">Reports</string>
+    <string name="nav_settings">Settings</string>
+    <string name="sidebar_online">Online</string>
+    <string name="sidebar_offline">Offline</string>
+    <string name="sidebar_shift_fmt">Shift: %1$s</string>
+</resources>

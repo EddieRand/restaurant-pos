@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Restaurant POS</string>
+    <string name="kiosk_order_placed">Order Placed!</string>
+    <string name="kiosk_order_number_label">Your order number</string>
+    <string name="kiosk_pickup_code_label">Your pickup number</string>
+    <string name="kiosk_scan_hint">Scan with your phone to track your order</string>
+    <string name="kiosk_wait_instruction">Please wait at the counter.\nA cashier will process your payment.</string>
+    <string name="kiosk_new_order">New Order</string>
+    <string name="kiosk_new_order_countdown">New Order (%1$ds)</string>
+    <string name="kiosk_member_lookup_title">Member Lookup</string>
+    <string name="kiosk_member_phone_label">Phone Number</string>
+    <string name="kiosk_member_search">Search</string>
+    <string name="kiosk_member_not_found">No member found for this phone number</string>
+    <string name="kiosk_member_points">Points balance: %1$d</string>
+</resources>

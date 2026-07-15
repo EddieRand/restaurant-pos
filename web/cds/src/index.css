@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --cds-background: #faf8f5;
+    --cds-surface: #ffffff;
+    --cds-border: #e8ded2;
+    --cds-text-primary: #0f172a;
+    --cds-text-secondary: #5f6368;
+    --cds-accent: #a9652b;
+    --cds-accent-soft: #f4e8dc;
+    --cds-success: #2e7d32;
+    --cds-discount: #c96a2b;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-background text-textPrimary font-sans antialiased;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+}
+
+@layer components {
+  /* Shared CDS card surface — used by every page for visual consistency. */
+  .cds-card {
+    @apply bg-surface rounded-cds border border-cdsborder shadow-cds;
+  }
+
+  .cds-input {
+    @apply w-full px-5 py-3.5 rounded-cds-sm border border-cdsborder bg-surface
+           text-textPrimary text-lg placeholder:text-textSecondary/70
+           focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent
+           transition duration-150;
+  }
+
+  .cds-btn-primary {
+    @apply inline-flex w-full items-center justify-center gap-2 px-6 py-3.5 rounded-cds-sm
+           bg-accent hover:bg-accent-dark active:bg-accent-dark
+           text-white font-semibold text-lg
+           transition-colors duration-150
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2;
+  }
+}

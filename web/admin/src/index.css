@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand: #FF5C00;
+    --brand-dim: #D94D00;
+    --surface: #FAFAFA;
+    --surface-raised: #FFFFFF;
+    --border: #E5E7EB;
+    --text-primary: #111827;
+    --text-secondary: #6B7280;
+    --text-muted: #9CA3AF;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  * {
+    @apply border-gray-200;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
+           bg-brand-500 hover:bg-brand-600 active:bg-brand-700
+           text-white font-medium text-sm
+           transition-colors duration-150
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
+           bg-white hover:bg-gray-50 active:bg-gray-100
+           text-gray-700 font-medium text-sm border border-gray-200
+           transition-colors duration-150
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
+  }
+
+  .input {
+    @apply w-full px-3.5 py-2.5 rounded-lg border border-gray-200
+           bg-white text-gray-900 text-sm placeholder:text-gray-400
+           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent
+           transition duration-150;
+  }
+
+  .card {
+    @apply bg-white rounded-xl border border-gray-100 shadow-sm;
+  }
+
+  .stat-card {
+    @apply card p-5 flex flex-col gap-1;
+  }
+
+  .nav-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
+           text-gray-600 hover:text-gray-900 hover:bg-gray-100
+           transition-colors duration-150 cursor-pointer;
+  }
+
+  .nav-link.active {
+    @apply bg-brand-50 text-brand-600 hover:bg-brand-100 hover:text-brand-700;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+}
+
+/* react-day-picker overrides */
+.rdp {
+  --rdp-accent-color: #FF5C00;
+  --rdp-background-color: #fff7f3;
+  margin: 0;
+}
+.rdp-day_selected,
+.rdp-day_selected:hover {
+  background-color: #FF5C00 !important;
+  color: #fff !important;
+}
+.rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+  background-color: #fff7f3;
+}
+.rdp-caption_label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.rdp-head_cell {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #9ca3af;
+}

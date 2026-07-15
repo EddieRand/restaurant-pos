@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">餐饮 POS</string>
+    <!-- 左侧导航 -->
+    <string name="nav_pos">点单</string>
+    <string name="nav_orders">订单</string>
+    <string name="nav_tables">桌台</string>
+    <string name="nav_customers">顾客</string>
+    <string name="nav_menu">菜单</string>
+    <string name="nav_discounts">折扣</string>
+    <string name="nav_reports">报表</string>
+    <string name="nav_settings">设置</string>
+    <string name="sidebar_online">在线</string>
+    <string name="sidebar_offline">离线</string>
+    <string name="sidebar_shift_fmt">班次：%1$s</string>
+</resources>

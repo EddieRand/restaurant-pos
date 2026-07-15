@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync_status_offline">Offline</string>
+    <string name="sync_status_syncing">Syncing</string>
+    <string name="sync_status_synced">Synced</string>
+    <string name="offline_banner_message">Offline mode - orders will sync automatically once connection is restored</string>
+    <string name="offline_banner_pending">Pending: %1$d</string>
+</resources>

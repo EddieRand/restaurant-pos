@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="kds_title">厨房显示屏</string>
+    <string name="kds_all_clear">全部完成！</string>
+    <string name="kds_bump">完成</string>
+    <string name="kds_recall">召回</string>
+    <string name="kds_recalled">已召回</string>
+    <string name="kds_order_prefix">订单</string>
+    <string name="kds_course_prefix">道</string>
+    <string name="kds_overdue">超时</string>
+</resources>

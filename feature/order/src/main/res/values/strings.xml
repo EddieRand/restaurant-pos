@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Order screen general -->
+    <string name="order_title">Order</string>
+    <string name="order_place_button">Place Order</string>
+    <string name="order_subtotal_label">Subtotal</string>
+    <string name="order_tax_label">Tax</string>
+    <string name="order_total_label">Total</string>
+
+    <!-- Order type chips -->
+    <string name="order_type_dine_in">Dine In</string>
+    <string name="order_type_takeaway">Takeaway</string>
+    <string name="order_type_delivery">Delivery</string>
+
+    <!-- Category names (mapped from DataSeeder categoryId) -->
+    <string name="cat_mains">Mains</string>
+    <string name="cat_starters">Starters</string>
+    <string name="cat_drinks">Drinks</string>
+    <string name="cat_desserts">Desserts</string>
+
+    <!-- Sold out -->
+    <string name="order_sold_out">Sold Out</string>
+
+    <!-- Void / refund -->
+    <string name="order_item_void_label">VOID</string>
+    <string name="order_item_refund_action">Void Item</string>
+
+    <!-- Modifier bottom sheet -->
+    <string name="modifier_sheet_title">Customize</string>
+    <string name="modifier_sheet_confirm">Add to Order</string>
+    <string name="modifier_required_badge">Required</string>
+    <string name="modifier_optional_badge">Optional</string>
+
+    <!-- Permission denied -->
+    <string name="permission_denied_title">Permission Required</string>
+    <string name="permission_denied_body">You do not have permission to: %1$s. Please ask a supervisor.</string>
+    <string name="permission_denied_ok">OK</string>
+
+    <!-- Split order dialog -->
+    <string name="split_order_button">Split Order</string>
+    <string name="split_order_dialog_title">Select Items to Split</string>
+    <string name="split_order_confirm">Split</string>
+    <string name="split_order_cancel">Cancel</string>
+    <string name="order_item_note_hint">Chef note (e.g. no onions, well done…)</string>
+    <string name="order_item_note_save">Save Note</string>
+    <string name="order_add_notes">Add Order Note…</string>
+    <string name="order_notes_title">Order Note</string>
+    <string name="order_notes_hint">Allergy info, occasion, special request…</string>
+    <string name="menu_tab_items">Items</string>
+    <string name="menu_tab_combos">Combos</string>
+    <string name="combo_component_count">%1$d items included</string>
+    <!-- POS reskin chrome -->
+    <string name="pos_search_menu">Search menu</string>
+    <string name="pos_scan">Scan</string>
+    <string name="pos_add_customer">Add customer</string>
+    <string name="pos_table_chip">Table 12</string>
+    <string name="pos_guests_chip">2 guests</string>
+    <string name="pos_favorites">Favorites</string>
+    <string name="pos_filters">Filters</string>
+    <string name="pos_no_items">No items yet</string>
+    <string name="pos_walk_in">Walk-in</string>
+    <string name="pos_send_to_kitchen">Send to Kitchen · %1$s</string>
+    <string name="pos_action_note">Note</string>
+    <string name="pos_action_discount">Discount</string>
+    <string name="pos_action_hold">Hold Order</string>
+    <string name="pos_action_more">More</string>
+    <string name="pos_action_checkout">Checkout</string>
+    <string name="pos_remove_item">Remove</string>
+    <!-- Meal-part category tabs (mockup) -->
+    <string name="pos_cat_breakfast">Breakfast</string>
+    <string name="pos_cat_lunch">Lunch</string>
+    <string name="pos_cat_dinner">Dinner</string>
+    <string name="pos_cat_bakery">Bakery</string>
+    <string name="pos_cat_retail">Retail</string>
+    <string name="pos_cat_seasonal">Seasonal</string>
+    <!-- Menu card badges -->
+    <string name="pos_badge_popular">Popular</string>
+    <string name="pos_badge_vegan">Vegan</string>
+    <string name="pos_badge_spicy">Spicy</string>
+    <!-- Cart header -->
+    <string name="pos_order_type_label">Order Type</string>
+    <string name="pos_customer_label">Customer</string>
+    <string name="pos_walk_in_customer">Walk-in Customer</string>
+    <string name="pos_select_customer">Select Customer</string>
+    <string name="pos_customer_search_hint">Search name or phone</string>
+    <string name="pos_customer_empty">No customers found</string>
+    <string name="pos_customer_points">%1$d pts</string>
+    <string name="pos_service_charge">Service Charge (%1$s)</string>
+    <string name="pos_tax_pct">Tax (%1$s)</string>
+    <!-- QSR -->
+    <string name="qsr_pickup_auto">Auto</string>
+    <string name="qsr_pickup_chip">Pickup #%1$s</string>
+    <string name="qsr_pickup_edit_hint">Enter pickup no.</string>
+    <string name="qsr_dine_in_subtitle">No table required</string>
+    <string name="qsr_takeaway_subtitle">Pickup at counter</string>
+    <string name="qsr_delivery_subtitle">Address required</string>
+    <string name="qsr_cat_coffee">Coffee</string>
+    <string name="qsr_cat_tea">Tea</string>
+    <string name="qsr_cat_milk_tea">Milk Tea</string>
+    <string name="qsr_cat_food">Food</string>
+    <string name="qsr_cat_combo">Combo</string>
+    <string name="qsr_clear_cart">Clear Cart</string>
+    <string name="qsr_checkout_pay">Checkout &amp; Pay · %1$s</string>
+    <string name="qsr_payment_modal_title">Checkout &amp; Pay</string>
+    <string name="qsr_payment_cash">Cash</string>
+    <string name="qsr_payment_card">Card</string>
+    <string name="qsr_payment_mobile">Mobile Pay</string>
+    <string name="qsr_payment_qr">QR Pay</string>
+    <string name="qsr_payment_split">Split</string>
+    <string name="qsr_payment_gift_card">Gift Card</string>
+    <string name="qsr_payment_other">Other</string>
+    <string name="qsr_cash_received">Received Amount</string>
+    <string name="qsr_cash_change">Change</string>
+    <string name="qsr_cash_exact">Exact</string>
+    <string name="qsr_cash_confirm">Confirm Payment</string>
+    <string name="qsr_card_waiting">Waiting for payment…</string>
+    <string name="qsr_payment_success">Payment Successful</string>
+    <string name="qsr_sent_to_kitchen">Sent to Bar &amp; Kitchen</string>
+    <string name="qsr_receipt_printed">Receipt printed</string>
+    <string name="qsr_new_order">New Order</string>
+    <string name="qsr_print_again">Print Again</string>
+    <string name="qsr_view_order">View Order</string>
+    <string name="qsr_auto_close">Auto-closing…</string>
+    <string name="qsr_confirm_clear_cart">Remove all items from cart?</string>
+    <string name="qsr_pickup_label">Pickup No.</string>
+    <string name="qsr_order_type_dine_in_desc">No table required</string>
+    <string name="qsr_order_type_takeaway_desc">Pickup at counter</string>
+    <string name="qsr_order_type_delivery_desc">Address required</string>
+    <string name="qsr_order_status">Order Status</string>
+</resources>

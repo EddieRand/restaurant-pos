@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="kds_title">Kitchen Display</string>
+    <string name="kds_all_clear">All clear!</string>
+    <string name="kds_bump">Bump</string>
+    <string name="kds_recall">Recall</string>
+    <string name="kds_recalled">RECALLED</string>
+    <string name="kds_order_prefix">Order</string>
+    <string name="kds_course_prefix">Course</string>
+    <string name="kds_overdue">OVERDUE</string>
+</resources>

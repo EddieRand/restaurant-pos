@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">桌边点餐</string>
+    <string name="pad_not_configured">PAD 未配置</string>
+    <string name="pad_my_orders">我的订单</string>
+    <string name="pad_no_orders">还没有订单</string>
+    <string name="pad_continue_without_package">不选套餐，直接点餐</string>
+    <string name="pad_per_person">每位</string>
+    <string name="pad_select">选择</string>
+    <string name="pad_sold_out">售罄</string>
+    <string name="pad_your_order">我的购物车</string>
+    <string name="pad_cart_empty">购物车是空的</string>
+    <string name="pad_subtotal">小计</string>
+    <string name="pad_call_waiter">呼叫服务员</string>
+</resources>

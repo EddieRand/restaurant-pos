@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">餐饮POS</string>
+    <string name="kiosk_order_placed">下单成功！</string>
+    <string name="kiosk_order_number_label">您的取餐号</string>
+    <string name="kiosk_pickup_code_label">您的取餐号</string>
+    <string name="kiosk_scan_hint">用手机扫码查看订单详情</string>
+    <string name="kiosk_wait_instruction">请在收银台等候。\n收银员将为您结账。</string>
+    <string name="kiosk_new_order">新建订单</string>
+    <string name="kiosk_new_order_countdown">新建订单（%1$d秒）</string>
+    <string name="kiosk_member_lookup_title">会员查询</string>
+    <string name="kiosk_member_phone_label">手机号</string>
+    <string name="kiosk_member_search">查询</string>
+    <string name="kiosk_member_not_found">未找到该手机号对应的会员</string>
+    <string name="kiosk_member_points">积分余额：%1$d</string>
+</resources>
