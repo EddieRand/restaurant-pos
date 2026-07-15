@@ -44,6 +44,14 @@ Build the Cashier APK:
 ./gradlew :app:cashier:assembleDebug
 ```
 
+Before each clean rehearsal, remove stale local orders and JWTs, then relaunch Cashier:
+
+```bash
+adb shell pm clear com.restaurantpos.app.cashier
+```
+
+This step is required whenever `JWT_SECRET` changes; otherwise an already-running Cashier may keep sending an expired terminal token until its data is cleared.
+
 ## Demo flow
 
 1. Open Cashier and sign in with PIN `2222`.
