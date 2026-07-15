@@ -4,6 +4,7 @@ const jaJP: Translations = {
   nav: {
     dashboard: 'ダッシュボード',
     menu: 'メニュー管理',
+    aiPrice: 'AI 価格変更',
     tables: 'テーブル管理',
     kitchen: '[TODO: kitchen nav]',
     kiosk: '[TODO: kiosk nav]',

@@ -21,8 +21,9 @@ apiClient.interceptors.response.use(
   (res) => res,
   (err) => {
     const status = err.response?.status
-    const isAiInsightRequest = err.config?.url === '/admin/ai/operating-insight'
-    if (status === 401 && !isAiInsightRequest && import.meta.env.VITE_MOCK_AUTH !== 'true') {
+    // AI endpoints surface 401 (AI_UNAUTHORIZED) in-page rather than force-logout.
+    const isAiRequest = err.config?.url?.startsWith('/admin/ai/') ?? false
+    if (status === 401 && !isAiRequest && import.meta.env.VITE_MOCK_AUTH !== 'true') {
       localStorage.removeItem('pos_admin_token')
       localStorage.removeItem('pos_admin_user')
       window.location.href = '/login'

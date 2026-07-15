@@ -4,6 +4,7 @@ const viVN: Translations = {
   nav: {
     dashboard: 'Tổng quan',
     menu: 'Quản lý thực đơn',
+    aiPrice: 'Đổi giá AI',
     tables: 'Quản lý bàn',
     kitchen: '[TODO: kitchen nav]',
     kiosk: '[TODO: kiosk nav]',

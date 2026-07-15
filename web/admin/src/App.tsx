@@ -5,6 +5,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import MenuPage from './pages/MenuPage'
+import AiPriceConsolePage from './pages/AiPriceConsolePage'
 import ReportPage from './pages/ReportPage'
 import OrdersPage from './pages/OrdersPage'
 import UsersPage from './pages/UsersPage'
@@ -36,6 +37,7 @@ export default function App() {
         >
           <Route index element={<ErrorBoundary label="Dashboard"><DashboardPage /></ErrorBoundary>} />
           <Route path="menu" element={<ErrorBoundary label="Menu"><MenuPage /></ErrorBoundary>} />
+          <Route path="ai-price" element={<ErrorBoundary label="AiPrice"><AiPriceConsolePage /></ErrorBoundary>} />
           <Route path="crm" element={<ErrorBoundary label="CRM"><CRMPage /></ErrorBoundary>} />
           <Route path="reservations" element={<ErrorBoundary label="Reservations"><ReservationsPage /></ErrorBoundary>} />
           <Route path="reservations/settings" element={<ErrorBoundary label="ReservationSettings"><ReservationSettingsPage /></ErrorBoundary>} />

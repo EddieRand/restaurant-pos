@@ -4,6 +4,7 @@ const koKR: Translations = {
   nav: {
     dashboard: '대시보드',
     menu: '메뉴 관리',
+    aiPrice: 'AI 가격 변경',
     tables: '테이블 관리',
     kitchen: '[TODO: kitchen nav]',
     kiosk: '[TODO: kiosk nav]',

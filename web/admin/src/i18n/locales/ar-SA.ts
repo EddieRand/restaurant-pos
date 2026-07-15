@@ -4,6 +4,7 @@ const arSA: Translations = {
   nav: {
     dashboard: 'لوحة التحكم',
     menu: 'إدارة القائمة',
+    aiPrice: 'تسعير AI',
     tables: 'إدارة الطاولات',
     kitchen: '[TODO: kitchen nav]',
     kiosk: '[TODO: kiosk nav]',

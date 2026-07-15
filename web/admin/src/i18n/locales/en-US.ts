@@ -4,6 +4,7 @@ const enUS: Translations = {
   nav: {
     dashboard: 'Dashboard',
     menu: 'Menu',
+    aiPrice: 'AI Pricing',
     tables: 'Tables',
     kitchen: 'Kitchen',
     kiosk: 'Kiosk',

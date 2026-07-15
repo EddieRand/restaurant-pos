@@ -4,6 +4,7 @@ const zhTW: Translations = {
   nav: {
     dashboard: '概覽',
     menu: '菜單管理',
+    aiPrice: 'AI 改價',
     tables: '桌台管理',
     kitchen: '[TODO: kitchen nav]',
     kiosk: '[TODO: kiosk nav]',

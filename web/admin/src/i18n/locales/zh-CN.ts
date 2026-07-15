@@ -2,6 +2,7 @@ const zhCN = {
   nav: {
     dashboard: '概览',
     menu: '菜单管理',
+    aiPrice: 'AI 改价',
     tables: '桌台管理',
     kitchen: '厨房管理',
     kiosk: 'Kiosk 管理',

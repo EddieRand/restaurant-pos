@@ -4,6 +4,7 @@ const msMY: Translations = {
   nav: {
     dashboard: 'Papan Pemuka',
     menu: 'Pengurusan Menu',
+    aiPrice: 'Harga AI',
     tables: 'Pengurusan Meja',
     kitchen: '[TODO: kitchen nav]',
     kiosk: '[TODO: kiosk nav]',

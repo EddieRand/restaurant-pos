@@ -4,6 +4,7 @@ const thTH: Translations = {
   nav: {
     dashboard: 'แดชบอร์ด',
     menu: 'จัดการเมนู',
+    aiPrice: 'ปรับราคาด้วย AI',
     tables: 'จัดการโต๊ะ',
     kitchen: '[TODO: kitchen nav]',
     kiosk: '[TODO: kiosk nav]',
