@@ -102,10 +102,11 @@ function HowToResult({ step }: { step: AiWorkspaceStep }) {
   )
 }
 
-function PriceProposalResult({ step, execution, executing, onExecute }: {
+function PriceProposalResult({ step, execution, executing, executeError, onExecute }: {
   step: AiWorkspaceStep
   execution?: AiPriceExecution
   executing: boolean
+  executeError?: { code: string; message: string; retryable: boolean }
   onExecute: (step: AiWorkspaceStep, proposal: AiPriceProposal) => Promise<void>
 }) {
   const proposal = step.result?.priceProposal
@@ -120,6 +121,10 @@ function PriceProposalResult({ step, execution, executing, onExecute }: {
   if (!proposal) return null
   const money = makeMoneyFormatter(proposal.currencyCode, proposal.minorUnitDigits)
   const expired = now >= proposal.expiresAt
+  // A non-retryable execute error (stale / expired / not-found / duplicate / permission)
+  // invalidates this proposal — block execution and steer the operator to regenerate.
+  // Retryable provider failures (rate-limit / unavailable / timeout) keep the button live.
+  const blocked = !!executeError && !executeError.retryable
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h4 className="text-sm font-semibold text-gray-900">{copy.price.proposal}</h4><span className={`rounded-full px-2 py-1 text-[11px] ${expired && !persistedExecution ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-500'}`}>{copy.price.expires} {new Date(proposal.expiresAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span></div>
@@ -131,7 +136,10 @@ function PriceProposalResult({ step, execution, executing, onExecute }: {
       {proposal.warnings.length > 0 && <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-700"><p className="font-semibold">{copy.price.warnings}</p><ul className="mt-1 list-disc space-y-1 pl-4">{proposal.warnings.map((warning, index) => <li key={`${warning.code}-${index}`}>{warning.message}</li>)}</ul></div>}
       <p className="mt-3 text-xs leading-5 text-gray-400">{copy.price.serverComputed}</p>
       {persistedExecution ? <div className="mt-4 rounded-lg border border-emerald-100 bg-emerald-50 p-4"><p className="font-semibold text-emerald-800">✓ {copy.price.executed}</p><p className="mt-1 text-xs text-emerald-700">{copy.price.audit}：<code className="rounded bg-white px-1.5 py-0.5">{persistedExecution.auditId}</code></p>{persistedExecution.idempotentReplay && <p className="mt-1 text-xs text-amber-700">{copy.price.replay}</p>}</div>
-        : <div className="mt-4 flex justify-end"><button type="button" className="btn-primary" disabled={expired || executing} onClick={() => setDialogOpen(true)}>{expired ? copy.price.expired : executing ? copy.price.executing : copy.price.review}</button></div>}
+        : <>
+            {executeError && <div role="alert" className="mt-4 rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-700">{executeError.message}</div>}
+            <div className="mt-4 flex justify-end"><button type="button" className="btn-primary" disabled={expired || executing || blocked} onClick={() => setDialogOpen(true)}>{executing ? copy.price.executing : expired ? copy.price.expired : executeError?.retryable ? copy.retry : copy.price.review}</button></div>
+          </>}
       {dialogOpen && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-labelledby={`confirm-${step.stepId}`} onClick={() => setDialogOpen(false)}><div className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-xl sm:p-6" onClick={event => event.stopPropagation()}><h3 id={`confirm-${step.stepId}`} className="text-lg font-semibold text-gray-900">{copy.price.dialogTitle}</h3><p className="mt-2 text-sm leading-6 text-gray-600">{copy.price.dialogBody}</p><ul className="mt-4 max-h-52 space-y-2 overflow-y-auto rounded-xl bg-gray-50 p-3">{proposal.changes.map(change => <li key={change.itemId} className="flex justify-between gap-4 text-sm"><span className="font-medium text-gray-800">{change.itemName}</span><span className="shrink-0 tabular-nums text-gray-600">{money(change.oldPriceMinorUnit)} → <strong>{money(change.newPriceMinorUnit)}</strong></span></li>)}</ul><div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><button type="button" className="btn-secondary" onClick={() => setDialogOpen(false)}>{copy.price.cancel}</button><button type="button" className="btn-primary" onClick={async () => { setDialogOpen(false); await onExecute(step, proposal) }}>{copy.price.confirm}</button></div></div></div>}
     </div>
   )
@@ -149,11 +157,12 @@ function ExecutionOnlyResult({ step }: { step: AiWorkspaceStep }) {
   )
 }
 
-export default function AiWorkspaceRunPanel({ run, liveSteps, executionByStep, executingStepId, streamState, onExecute }: {
+export default function AiWorkspaceRunPanel({ run, liveSteps, executionByStep, executingStepId, executeErrorByStep, streamState, onExecute }: {
   run: AiWorkspaceRun
   liveSteps?: AiWorkspaceStep[]
   executionByStep: Record<string, AiPriceExecution>
   executingStepId?: string | null
+  executeErrorByStep?: Record<string, { code: string; message: string; retryable: boolean }>
   streamState?: 'live' | 'reconnecting' | 'complete'
   onExecute: (step: AiWorkspaceStep, proposal: AiPriceProposal) => Promise<void>
 }) {
@@ -162,7 +171,7 @@ export default function AiWorkspaceRunPanel({ run, liveSteps, executionByStep, e
     <section className="mt-3 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
       <div className="flex items-center justify-between gap-3 border-b border-gray-100 bg-gray-50/60 px-4 py-3"><p className="text-xs font-semibold text-gray-600">{copy.runResults}</p>{streamState && <span className={`flex items-center gap-1.5 text-[11px] ${streamState === 'reconnecting' ? 'text-amber-600' : streamState === 'live' ? 'text-blue-600' : 'text-emerald-600'}`}><span className={`h-1.5 w-1.5 rounded-full ${streamState === 'reconnecting' ? 'bg-amber-500' : streamState === 'live' ? 'animate-pulse bg-blue-500' : 'bg-emerald-500'}`} />{streamState === 'reconnecting' ? copy.reconnecting : streamState === 'live' ? copy.live : copy.complete}</span>}</div>
       {run.error && <div role="alert" className="border-b border-red-100 bg-red-50 p-4 text-sm text-red-700"><p className="font-semibold">{run.error.code}</p><p className="mt-1">{workspaceErrorMessage(run.error.code, run.error.message)}</p></div>}
-      {steps.length === 0 ? (!run.error && <div className="p-5 text-sm text-gray-400">{copy.noSteps}</div>) : <div className="divide-y divide-gray-100">{steps.map((step, index) => <article key={step.stepId} className="p-4 sm:p-5"><div className="mb-4 flex items-start gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600">{index + 1}</span><div className="min-w-0 flex-1"><p className="font-semibold text-gray-900">{step.displayTitle}</p><p className="mt-0.5 break-all text-[11px] text-gray-400">{step.tool}</p></div><span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${statusClass(step.status)}`}>{copy.stepStatuses[step.status]}</span></div>{step.error && <div role="alert" className="mb-3 rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-700"><strong>{step.error.code}</strong> · {step.error.message}</div>}<InsightResult step={step} /><QueryResult step={step} /><HowToResult step={step} /><PriceProposalResult step={step} execution={executionByStep[step.stepId]} executing={executingStepId === step.stepId} onExecute={onExecute} /><ExecutionOnlyResult step={step} /></article>)}</div>}
+      {steps.length === 0 ? (!run.error && <div className="p-5 text-sm text-gray-400">{copy.noSteps}</div>) : <div className="divide-y divide-gray-100">{steps.map((step, index) => <article key={step.stepId} className="p-4 sm:p-5"><div className="mb-4 flex items-start gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600">{index + 1}</span><div className="min-w-0 flex-1"><p className="font-semibold text-gray-900">{step.displayTitle}</p><p className="mt-0.5 break-all text-[11px] text-gray-400">{step.tool}</p></div><span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${statusClass(step.status)}`}>{copy.stepStatuses[step.status]}</span></div>{step.error && <div role="alert" className="mb-3 rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-700">{workspaceErrorMessage(step.error.code, step.error.message)}</div>}<InsightResult step={step} /><QueryResult step={step} /><HowToResult step={step} /><PriceProposalResult step={step} execution={executionByStep[step.stepId]} executing={executingStepId === step.stepId} executeError={executeErrorByStep?.[step.stepId]} onExecute={onExecute} /><ExecutionOnlyResult step={step} /></article>)}</div>}
     </section>
   )
 }

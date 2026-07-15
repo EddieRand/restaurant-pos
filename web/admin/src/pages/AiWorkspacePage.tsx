@@ -87,6 +87,7 @@ export default function AiWorkspacePage() {
   const [streamState, setStreamState] = useState<StreamState>('complete')
   const [executionByStep, setExecutionByStep] = useState<Record<string, AiPriceExecution>>({})
   const [executingStepId, setExecutingStepId] = useState<string | null>(null)
+  const [executeErrorByStep, setExecuteErrorByStep] = useState<Record<string, { code: string; message: string; retryable: boolean }>>({})
 
   const abortRef = useRef<AbortController | null>(null)
   const activeSessionIdRef = useRef<string | null>(null)
@@ -257,15 +258,33 @@ export default function AiWorkspacePage() {
     }
   }
 
+  // Execute errors are bound to the originating step (not the global banner) so the
+  // operator sees a precise status next to the proposal they tried to apply.
   async function executePrice(step: AiWorkspaceStep, proposal: AiPriceProposal) {
     setExecutingStepId(step.stepId)
-    setError(null)
+    // Clear any prior execute error for this step. Retrying reuses the SAME proposalId
+    // as the idempotency key, so a transient retry replays idempotently server-side.
+    setExecuteErrorByStep(current => {
+      if (!current[step.stepId]) return current
+      const next = { ...current }; delete next[step.stepId]; return next
+    })
     try {
       const execution = await aiWorkspaceApi.executePriceProposal(proposal.proposalId, proposal.proposalId)
       setExecutionByStep(current => ({ ...current, [step.stepId]: execution }))
       if (activeSession) await refreshSession(activeSession.sessionId)
     } catch (executeError) {
-      setError(workspaceErrorMessage(aiWorkspaceErrorCode(executeError), executeError instanceof Error ? executeError.message : copy.executeFailed))
+      const code = aiWorkspaceErrorCode(executeError) ?? 'AI_INVALID_REQUEST'
+      // Only genuinely transient provider failures may be retried with the same proposal.
+      const retryable = code === 'AI_RATE_LIMITED' || code === 'AI_PROVIDER_UNAVAILABLE' || code === 'AI_TIMEOUT'
+      setExecuteErrorByStep(current => ({
+        ...current,
+        [step.stepId]: { code, message: workspaceErrorMessage(code, executeError instanceof Error ? executeError.message : undefined), retryable },
+      }))
+      // Already executed: the price change is done — best-effort restore the persisted
+      // result + audit id. Keep the step error visible if that refresh itself fails.
+      if (code === 'AI_PROPOSAL_ALREADY_EXECUTED' && activeSession) {
+        await refreshSession(activeSession.sessionId).catch(() => undefined)
+      }
     } finally {
       setExecutingStepId(null)
     }
@@ -301,7 +320,7 @@ export default function AiWorkspacePage() {
               {!loadingSession && activeSession && activeSession.messages.length > 0 && <div className="space-y-5">{activeSession.messages.map(item => {
                 const user = item.role.toLowerCase() === 'user'
                 const messageRuns = runsByMessage.get(item.messageId) ?? []
-                return <div key={item.messageId} className={user ? 'ml-auto max-w-3xl' : 'mr-auto max-w-3xl'}><div className={`mb-1 text-[11px] text-gray-400 ${user ? 'text-right' : ''}`}>{user ? copy.user : copy.assistant} · {new Date(item.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</div><div className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-6 ${user ? 'rounded-tr-sm bg-brand-500 text-white' : 'rounded-tl-sm border border-gray-200 bg-white text-gray-700'}`}>{item.content}</div>{messageRuns.map(run => { const renderedRun = liveRun?.runId === run.runId ? liveRun : run; return <AiWorkspaceRunPanel key={run.runId} run={renderedRun} streamState={liveRun?.runId === run.runId ? streamState : isRunTerminal(run.status) ? 'complete' : undefined} executionByStep={executionByStep} executingStepId={executingStepId} onExecute={executePrice} /> })}</div>
+                return <div key={item.messageId} className={user ? 'ml-auto max-w-3xl' : 'mr-auto max-w-3xl'}><div className={`mb-1 text-[11px] text-gray-400 ${user ? 'text-right' : ''}`}>{user ? copy.user : copy.assistant} · {new Date(item.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</div><div className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-6 ${user ? 'rounded-tr-sm bg-brand-500 text-white' : 'rounded-tl-sm border border-gray-200 bg-white text-gray-700'}`}>{item.content}</div>{messageRuns.map(run => { const renderedRun = liveRun?.runId === run.runId ? liveRun : run; return <AiWorkspaceRunPanel key={run.runId} run={renderedRun} streamState={liveRun?.runId === run.runId ? streamState : isRunTerminal(run.status) ? 'complete' : undefined} executionByStep={executionByStep} executingStepId={executingStepId} executeErrorByStep={executeErrorByStep} onExecute={executePrice} /> })}</div>
               })}<div ref={messagesEndRef} /></div>}
             </section>
           </div>
