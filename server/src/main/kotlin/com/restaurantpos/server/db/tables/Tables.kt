@@ -373,6 +373,73 @@ object AiMutationAuditsTable : Table("ai_mutation_audits") {
     override val primaryKey = PrimaryKey(id)
 }
 
+// ── Unified AI workspace ────────────────────────────────────────────────────
+
+object AiWorkspaceSessionsTable : Table("ai_workspace_sessions") {
+    val id = varchar("id", 64)
+    val actorId = varchar("actor_id", 64).index()
+    val title = varchar("title", 160)
+    val expert = varchar("expert", 32)
+    val locale = varchar("locale", 16)
+    val createdAt = long("created_at")
+    val updatedAt = long("updated_at").index()
+    override val primaryKey = PrimaryKey(id)
+}
+
+object AiWorkspaceMessagesTable : Table("ai_workspace_messages") {
+    val id = varchar("id", 64)
+    val sessionId = varchar("session_id", 64).index()
+    val role = varchar("role", 16)
+    val content = text("content")
+    val createdAt = long("created_at")
+    override val primaryKey = PrimaryKey(id)
+}
+
+object AiWorkspaceRunsTable : Table("ai_workspace_runs") {
+    val id = varchar("id", 64)
+    val sessionId = varchar("session_id", 64).index()
+    val messageId = varchar("message_id", 64)
+    val status = varchar("status", 24)
+    val createdAt = long("created_at")
+    val completedAt = long("completed_at").nullable()
+    val errorCode = varchar("error_code", 64).nullable()
+    val errorMessage = text("error_message").nullable()
+    val errorRetryable = bool("error_retryable").default(false)
+    override val primaryKey = PrimaryKey(id)
+}
+
+object AiWorkspaceRunStepsTable : Table("ai_workspace_run_steps") {
+    val id = varchar("id", 64)
+    val runId = varchar("run_id", 64).index()
+    val position = integer("position")
+    val tool = varchar("tool", 64)
+    val kind = varchar("kind", 24)
+    val status = varchar("status", 32)
+    val dependsOnJson = text("depends_on_json").default("[]")
+    val displayTitle = varchar("display_title", 256)
+    val instruction = text("instruction")
+    val queryType = varchar("query_type", 32).nullable()
+    val resultJson = text("result_json").nullable()
+    val proposalId = varchar("proposal_id", 64).nullable().index()
+    val errorCode = varchar("error_code", 64).nullable()
+    val errorMessage = text("error_message").nullable()
+    val errorRetryable = bool("error_retryable").default(false)
+    override val primaryKey = PrimaryKey(id)
+}
+
+object AiWorkspaceEventsTable : Table("ai_workspace_events") {
+    val runId = varchar("run_id", 64).index()
+    val sequence = long("sequence")
+    val type = varchar("type", 64)
+    val occurredAt = long("occurred_at")
+    val stepJson = text("step_json").nullable()
+    val runStatus = varchar("run_status", 24).nullable()
+    val errorCode = varchar("error_code", 64).nullable()
+    val errorMessage = text("error_message").nullable()
+    val errorRetryable = bool("error_retryable").default(false)
+    override val primaryKey = PrimaryKey(runId, sequence)
+}
+
 // ── CRM ───────────────────────────────────────────────────────────────────────
 
 object CustomersTable : Table("customers") {

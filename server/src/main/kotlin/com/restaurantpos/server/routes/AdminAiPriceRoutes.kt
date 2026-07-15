@@ -3,6 +3,7 @@ package com.restaurantpos.server.routes
 import com.restaurantpos.server.ai.AiAgentException
 import com.restaurantpos.server.ai.AiNotConfiguredException
 import com.restaurantpos.server.ai.AiPriceAgentService
+import com.restaurantpos.server.ai.AiWorkspaceService
 import com.restaurantpos.server.ai.AiProviderException
 import com.restaurantpos.server.auth.JwtConfig
 import com.restaurantpos.server.auth.hasPermission
@@ -22,7 +23,7 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import kotlinx.coroutines.TimeoutCancellationException
 
-fun Route.adminAiPriceRoutes(service: AiPriceAgentService) {
+fun Route.adminAiPriceRoutes(service: AiPriceAgentService, workspaceService: AiWorkspaceService? = null) {
     authenticate("jwt") {
         route("/admin/ai/price-proposals") {
             post {
@@ -43,7 +44,10 @@ fun Route.adminAiPriceRoutes(service: AiPriceAgentService) {
                 call.respondAgentErrors {
                     val actorId = call.principal<JWTPrincipal>()!!.payload.getClaim(JwtConfig.CLAIM_USER_ID).asString()
                     val proposalId = call.parameters["proposalId"].orEmpty()
-                    call.respond(service.execute(actorId, proposalId, call.receive<ExecuteAiPriceProposalRequest>()))
+                    val response = service.execute(actorId, proposalId, call.receive<ExecuteAiPriceProposalRequest>())
+                    runCatching { workspaceService?.markProposalExecuted(actorId, response) }
+                        .onFailure { call.application.environment.log.error("Failed to link AI workspace execution", it) }
+                    call.respond(response)
                 }
             }
         }
