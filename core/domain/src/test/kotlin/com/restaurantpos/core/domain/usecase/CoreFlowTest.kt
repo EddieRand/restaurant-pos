@@ -119,6 +119,18 @@ class CoreFlowTest {
         assertEquals(OrderItemStatus.PLACED, orderRepo.items[extra.id]!!.status)
     }
 
+    @Test fun `placing order persists configured service charge for checkout`() = runTest {
+        val order = makeOrder("svc1", tableId = "t1")
+        orderRepo.orders["svc1"] = order
+
+        placeOrder(PlaceOrderUseCase.Params("svc1", listOf(makeItem("svc1", price = 420L))))
+
+        val saved = orderRepo.orders["svc1"]!!
+        assertEquals(420L, saved.subtotalMinorUnit)
+        assertEquals(21L, saved.serviceChargeMinorUnit)
+        assertEquals(441L, saved.totalMinorUnit)
+    }
+
     @Test fun `re-firing extra items on READY order returns it to PLACED`() = runTest {
         val order = makeOrder("rf2", status = OrderStatus.READY)
         orderRepo.orders["rf2"] = order
@@ -323,7 +335,9 @@ class CoreFlowTest {
         assertTrue(placeResult is PlaceOrderUseCase.Result.Success)
         assertEquals(TableStatus.ORDERED, tableRepo.tables["te1"]!!.status)
 
-        val settleResult = settlePayment(SettlePaymentUseCase.Params(makePayment("e2e1", 2000L)))
+        val settleResult = settlePayment(
+            SettlePaymentUseCase.Params(makePayment("e2e1", orderRepo.orders["e2e1"]!!.totalMinorUnit))
+        )
         assertTrue(settleResult is SettlePaymentUseCase.Result.Success)
         assertEquals(OrderStatus.CLOSED, orderRepo.orders["e2e1"]!!.status)
         assertEquals(TableStatus.DIRTY, tableRepo.tables["te1"]!!.status)

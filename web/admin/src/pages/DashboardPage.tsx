@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../api/client'
 import { fmtMoney, orderApi, reportApi, type TopItem } from '../api/reports'
 import { ingredientApi, type Ingredient, paymentMethodApi, type PaymentMethodConfig } from '../api/admin'
 import DatePicker from '../components/DatePicker'
+import AiOperatingInsightCard from '../components/AiOperatingInsightCard'
+import { useVisiblePolling } from '../hooks/useVisiblePolling'
 
 // ── Date range presets (mirrors ReportPage.tsx) ──────────────────────────────
 type Preset = 'today' | 'yesterday' | 'week' | 'month' | 'custom'
@@ -84,17 +86,16 @@ export default function DashboardPage() {
     })
   }, [])
 
-  useEffect(() => {
+  const loadReport = useCallback(() => {
     const [from, to] = rangeFor(preset, customFrom, customTo)
-    setLoading(true)
-    setError(null)
-
     apiClient
       .get<ShiftReport>(`/admin/reports/shift?from=${from}&to=${to}`)
-      .then((r) => setReport(r.data))
+      .then((r) => { setReport(r.data); setError(null) })
       .catch(() => setError(t('dashboard.errorLoad')))
       .finally(() => setLoading(false))
   }, [t, preset, customFrom, customTo])
+  useEffect(() => { setLoading(true); setError(null) }, [preset, customFrom, customTo])
+  useVisiblePolling(loadReport)
 
   // Needs-attention: pending QR confirmations, waiter calls, today's top items
   useEffect(() => {
@@ -260,6 +261,11 @@ export default function DashboardPage() {
         <StatCard label={t('dashboard.avgGuest')} value={loading ? '—' : fmt(report?.averageSpendPerGuestMinorUnit ?? 0)} />
       </div>
 
+      <AiOperatingInsightCard
+        fromMs={rangeFor(preset, customFrom, customTo)[0]}
+        toMs={rangeFor(preset, customFrom, customTo)[1]}
+      />
+
       {/* Week vs Last Week comparison */}
       {thisWeek && lastWeek && (
         <div className="card p-6 mb-8 border-l-4 border-brand-400">
@@ -303,7 +309,7 @@ export default function DashboardPage() {
       <LowStockCard items={lowStock} onViewAll={() => navigate('/inventory')} />
 
       {/* Top selling items today */}
-      <TopItemsCard items={topItems} />
+      <TopItemsCard items={topItems} language={i18n.language} />
 
       {/* Payment breakdown */}
       {report && Object.keys(report.paymentMethodBreakdown).length > 0 && (
@@ -457,7 +463,13 @@ function LowStockCard({ items, onViewAll }: { items: Ingredient[]; onViewAll: ()
 }
 
 function parseItemName(names: string, lang = 'zh-CN'): string {
-  try { const m = JSON.parse(names); return m[lang] ?? m['zh-CN'] ?? m['en-US'] ?? names } catch { return names }
+  try {
+    const m = JSON.parse(names)
+    const shortLang = lang.split('-')[0]
+    return m[lang] ?? m[shortLang] ?? m['zh-CN'] ?? m.zh ?? m['en-US'] ?? m.en ?? names
+  } catch {
+    return names
+  }
 }
 
 // ── Needs Attention card ────────────────────────────────────────────────────
@@ -515,7 +527,7 @@ function NeedsAttentionCard({ pendingQrCount, waiterCallCount, lowStockCount, on
 }
 
 // ── Top selling items today ─────────────────────────────────────────────────
-function TopItemsCard({ items }: { items: TopItem[] }) {
+function TopItemsCard({ items, language }: { items: TopItem[]; language: string }) {
   if (items.length === 0) return null
 
   const maxQty = Math.max(...items.map(i => i.quantity))
@@ -534,7 +546,7 @@ function TopItemsCard({ items }: { items: TopItem[] }) {
           return (
             <div key={item.menuItemId} className="flex items-center gap-3">
               <span className="w-5 text-xs font-semibold text-gray-400 text-right flex-shrink-0">{idx + 1}</span>
-              <span className="text-sm text-gray-700 w-32 flex-shrink-0 truncate">{parseItemName(item.names)}</span>
+              <span className="text-sm text-gray-700 w-32 flex-shrink-0 truncate">{parseItemName(item.names, language)}</span>
               <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div className="h-full bg-brand-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
               </div>

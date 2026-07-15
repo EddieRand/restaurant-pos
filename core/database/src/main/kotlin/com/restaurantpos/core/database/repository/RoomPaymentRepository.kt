@@ -31,7 +31,7 @@ class RoomPaymentRepository(
             entityType = SyncEntityType.PAYMENT,
             entityId = payment.id,
             operation = SyncOperation.CREATE,
-            payload = """{"id":"${payment.id}","orderId":"${payment.orderId}","amount":${payment.amountMinorUnit},"method":"${payment.method}","status":"${payment.status}"}""",
+            payload = """{"id":"${payment.id}","orderId":"${payment.orderId}","amountMinorUnit":${payment.amountMinorUnit},"method":"${payment.method}","status":"${payment.status}","operatorId":"${payment.operatorId}","createdAt":${payment.createdAt}}""",
         )
     }
 
