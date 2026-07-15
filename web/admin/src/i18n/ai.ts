@@ -17,7 +17,7 @@ const en = {
   generatedAt: 'Generated {{time}} · {{model}}',
   disclaimer: 'AI recommendations are for operational reference only. They cannot change orders, menus, inventory, or settings.',
   errors: {
-    unauthorized: 'Your session cannot generate an AI brief. Please sign in again.',
+    unauthorized: 'AI authorization failed. Your session may have expired or the service key may be invalid.',
     quota: 'AI service credit is insufficient. Ask an administrator to top up the account.',
     rateLimited: 'The AI service is busy. Wait a moment and retry.',
     unavailable: 'AI is not configured or is temporarily unavailable. Core reports are unaffected.',
@@ -45,7 +45,7 @@ const zh: typeof en = {
   generatedAt: '生成于 {{time}} · {{model}}',
   disclaimer: 'AI 建议仅供经营参考，不能修改订单、菜单、库存或系统设置。',
   errors: {
-    unauthorized: '当前登录状态无权生成 AI 简报，请重新登录。',
+    unauthorized: 'AI 授权失败，可能是登录已过期或服务密钥无效。',
     quota: 'AI 服务余额不足，请联系管理员充值后重试。',
     rateLimited: 'AI 服务繁忙，请稍后重试。',
     unavailable: 'AI 尚未配置或暂时不可用，核心订单和报表不受影响。',

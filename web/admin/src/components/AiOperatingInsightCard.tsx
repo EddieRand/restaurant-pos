@@ -9,11 +9,20 @@ type ErrorKind = 'unauthorized' | 'quota' | 'rateLimited' | 'unavailable' | 'tim
 
 function classifyError(error: unknown): ErrorKind {
   if (!axios.isAxiosError(error)) return 'generic'
+  const providerCode = typeof error.response?.data === 'object' && error.response.data !== null && 'code' in error.response.data
+    ? String(error.response.data.code)
+    : undefined
+  if (providerCode === 'AI_AUTH_FAILED') return 'unauthorized'
+  if (providerCode === 'AI_QUOTA_EXCEEDED') return 'quota'
+  if (providerCode === 'AI_RATE_LIMITED') return 'rateLimited'
+  if (providerCode === 'AI_PROVIDER_UNAVAILABLE' || providerCode === 'AI_NOT_CONFIGURED') return 'unavailable'
+  if (providerCode === 'AI_TIMEOUT') return 'timeout'
   if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') return 'timeout'
   if (error.response?.status === 401) return 'unauthorized'
   if (error.response?.status === 402) return 'quota'
   if (error.response?.status === 429) return 'rateLimited'
   if (error.response?.status === 503) return 'unavailable'
+  if (error.response?.status === 504) return 'timeout'
   return 'generic'
 }
 
