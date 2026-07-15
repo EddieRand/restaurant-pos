@@ -159,6 +159,51 @@ class AdminRoutesTest {
         assertFalse(items.any { it.id == itemId })
     }
 
+    @Test
+    fun `cashier can mark sold out but cannot change price`() = testApp {
+        val c = client(this)
+        val itemId = UUID.randomUUID().toString()
+        transaction {
+            MenuItemsTable.insert {
+                it[id] = itemId
+                it[names] = """{"en":"Soup"}"""
+                it[priceMinorUnit] = 600L
+                it[categoryId] = "cat-1"
+                it[updatedAt] = System.currentTimeMillis()
+            }
+        }
+        val cashierToken = JwtConfig.issueToken("cashier-1", "cashier")
+
+        val priceChange = c.patch("/admin/menu/$itemId") {
+            header(HttpHeaders.Authorization, "Bearer $cashierToken")
+            contentType(ContentType.Application.Json)
+            setBody(UpdateMenuItemRequest(priceMinorUnit = 700L))
+        }
+        assertEquals(HttpStatusCode.Forbidden, priceChange.status)
+
+        val soldOut = c.patch("/admin/menu/$itemId") {
+            header(HttpHeaders.Authorization, "Bearer $cashierToken")
+            contentType(ContentType.Application.Json)
+            setBody(UpdateMenuItemRequest(isSoldOut = true))
+        }
+        assertEquals(HttpStatusCode.OK, soldOut.status)
+    }
+
+    @Test
+    fun `waiter can view menu but cannot mutate availability`() = testApp {
+        val c = client(this)
+        val waiterToken = JwtConfig.issueToken("waiter-1", "waiter")
+
+        assertEquals(HttpStatusCode.OK, c.get("/admin/menu") {
+            header(HttpHeaders.Authorization, "Bearer $waiterToken")
+        }.status)
+        assertEquals(HttpStatusCode.Forbidden, c.post("/admin/menu/bulk-availability") {
+            header(HttpHeaders.Authorization, "Bearer $waiterToken")
+            contentType(ContentType.Application.Json)
+            setBody(BulkAvailabilityRequest(ids = listOf("item-1"), isSoldOut = true))
+        }.status)
+    }
+
     // ── Report ────────────────────────────────────────────────────────────────
 
     @Test
