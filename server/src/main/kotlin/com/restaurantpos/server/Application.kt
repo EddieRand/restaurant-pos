@@ -2,6 +2,7 @@ package com.restaurantpos.server
 
 import com.restaurantpos.server.auth.JwtConfig
 import com.restaurantpos.server.auth.requirePermission
+import com.restaurantpos.server.ai.AiInsightService
 import com.restaurantpos.server.db.DatabaseFactory
 import com.restaurantpos.server.model.ErrorResponse
 import com.restaurantpos.server.routes.*
@@ -90,7 +91,7 @@ fun Application.configureAuth() {
     }
 }
 
-fun Application.configureRouting() {
+fun Application.configureRouting(aiInsightService: AiInsightService = AiInsightService.fromEnvironment()) {
     routing {
         get("/health") {
             call.respond(mapOf("status" to "ok"))
@@ -106,6 +107,7 @@ fun Application.configureRouting() {
         adminMenuProfileRoutes()
         adminOrderRoutes()
         adminReportRoutes()
+        adminAiRoutes(aiInsightService)
         adminUserRoutes()
         adminRoleRoutes()
         adminSettingsRoutes()
