@@ -5,6 +5,7 @@ import com.restaurantpos.server.db.DatabaseFactory
 import com.restaurantpos.server.db.tables.MenuItemsTable
 import com.restaurantpos.server.db.tables.OrderItemsTable
 import com.restaurantpos.server.db.tables.OrdersTable
+import com.restaurantpos.server.db.tables.PaymentsTable
 import com.restaurantpos.server.db.tables.SyncLogTable
 import com.restaurantpos.server.db.tables.UsersTable
 import com.restaurantpos.server.db.tables.SettingsTable
@@ -99,6 +100,49 @@ class SyncRoutesTest {
             SyncLogTable.selectAll().count { it[SyncLogTable.entityId] == "order-abc" }
         }
         assertEquals(1, count)
+    }
+
+    @Test
+    fun `payment sync accepts canonical and legacy amount fields`() = testApp {
+        val c = createClient { install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) } }
+
+        suspend fun pushPayment(id: String, payload: String) = c.post("/sync/push") {
+            header(HttpHeaders.Authorization, "Bearer ${validToken()}")
+            contentType(ContentType.Application.Json)
+            setBody(
+                SyncPushRequest(
+                    id = UUID.randomUUID().toString(),
+                    entityType = "PAYMENT",
+                    entityId = id,
+                    operation = "CREATE",
+                    payload = payload,
+                    updatedAt = System.currentTimeMillis(),
+                )
+            )
+        }
+
+        assertEquals(
+            HttpStatusCode.OK,
+            pushPayment(
+                "payment-canonical",
+                """{"id":"payment-canonical","orderId":"order-1","amountMinorUnit":441,"method":"CASH","status":"PAID"}""",
+            ).status,
+        )
+        assertEquals(
+            HttpStatusCode.OK,
+            pushPayment(
+                "payment-legacy",
+                """{"id":"payment-legacy","orderId":"order-2","amount":1312,"method":"CASH","status":"PAID"}""",
+            ).status,
+        )
+
+        val amounts = transaction {
+            PaymentsTable.selectAll().associate {
+                it[PaymentsTable.id] to it[PaymentsTable.amountMinorUnit]
+            }
+        }
+        assertEquals(441L, amounts["payment-canonical"])
+        assertEquals(1312L, amounts["payment-legacy"])
     }
 
     @Test
