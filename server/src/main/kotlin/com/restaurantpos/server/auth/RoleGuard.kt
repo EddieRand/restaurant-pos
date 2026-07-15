@@ -35,18 +35,16 @@ import org.jetbrains.exposed.sql.transactions.transaction
  * @return true = 有权限可继续, false = 已响应 403 应 return
  */
 suspend fun ApplicationCall.requirePermission(permissionKey: String): Boolean {
-    val jwtPrincipal = principal<JWTPrincipal>()
-    val roleId = jwtPrincipal?.payload
-        ?.getClaim(JwtConfig.CLAIM_ROLE)
-        ?.asString()
-        ?.lowercase()
+    val allowed = hasPermission(permissionKey)
+    if (!allowed) respond(HttpStatusCode.Forbidden, mapOf("requiredPermission" to permissionKey))
+    return allowed
+}
 
-    if (roleId.isNullOrBlank()) {
-        respond(HttpStatusCode.Forbidden, mapOf("requiredPermission" to permissionKey))
-        return false
-    }
-
-    val allowed = transaction {
+fun ApplicationCall.hasPermission(permissionKey: String): Boolean {
+    val roleId = principal<JWTPrincipal>()?.payload
+        ?.getClaim(JwtConfig.CLAIM_ROLE)?.asString()?.lowercase()
+        ?: return false
+    return transaction {
         RolePermissionsTable
             .selectAll()
             .where {
@@ -55,11 +53,4 @@ suspend fun ApplicationCall.requirePermission(permissionKey: String): Boolean {
             }
             .count() > 0
     }
-
-    if (!allowed) {
-        respond(HttpStatusCode.Forbidden, mapOf("requiredPermission" to permissionKey))
-        return false
-    }
-
-    return true
 }

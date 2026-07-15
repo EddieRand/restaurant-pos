@@ -3,8 +3,10 @@ package com.restaurantpos.server
 import com.restaurantpos.server.auth.JwtConfig
 import com.restaurantpos.server.auth.requirePermission
 import com.restaurantpos.server.ai.AiInsightService
+import com.restaurantpos.server.ai.AiPriceAgentService
 import com.restaurantpos.server.db.DatabaseFactory
 import com.restaurantpos.server.model.ErrorResponse
+import com.restaurantpos.server.model.AiAgentErrorResponse
 import com.restaurantpos.server.routes.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
@@ -17,6 +19,7 @@ import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
@@ -85,13 +88,20 @@ fun Application.configureAuth() {
                 else JWTPrincipal(credential.payload)
             }
             challenge { _, _ ->
-                call.respond(HttpStatusCode.Unauthorized, ErrorResponse("Missing or invalid token"))
+                if (call.request.uri.startsWith("/admin/ai/price-proposals")) {
+                    call.respond(HttpStatusCode.Unauthorized, AiAgentErrorResponse("AI_UNAUTHORIZED", "Missing or invalid token"))
+                } else {
+                    call.respond(HttpStatusCode.Unauthorized, ErrorResponse("Missing or invalid token"))
+                }
             }
         }
     }
 }
 
-fun Application.configureRouting(aiInsightService: AiInsightService = AiInsightService.fromEnvironment()) {
+fun Application.configureRouting(
+    aiInsightService: AiInsightService = AiInsightService.fromEnvironment(),
+    aiPriceAgentService: AiPriceAgentService = AiPriceAgentService.fromEnvironment(),
+) {
     routing {
         get("/health") {
             call.respond(mapOf("status" to "ok"))
@@ -108,6 +118,7 @@ fun Application.configureRouting(aiInsightService: AiInsightService = AiInsightS
         adminOrderRoutes()
         adminReportRoutes()
         adminAiRoutes(aiInsightService)
+        adminAiPriceRoutes(aiPriceAgentService)
         adminUserRoutes()
         adminRoleRoutes()
         adminSettingsRoutes()
