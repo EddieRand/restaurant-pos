@@ -1,0 +1,25 @@
+web/admin/src/components/AiWorkspaceResults.tsx
+  s_1c80a6f4eb339d::t_f66918422e70ac 105,109,124-127,139-142,160,165,174
+web/admin/src/i18n/aiWorkspace.ts
+  s_1c80a6f4eb339d::t_03a02f5d6fea31 86-92
+web/admin/src/pages/AiWorkspacePage.tsx
+  s_1c80a6f4eb339d::t_ecd839f780e8a6 90,261-262,265-270,276-286,322
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "3702ce7017b02d2da4f13e03f7763e14e499221d",
+  "prompts": {},
+  "sessions": {
+    "s_1c80a6f4eb339d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1a255ba6-873e-4a8d-ba13-d703ff828bfb",
+        "model": "unknown"
+      },
+      "human_author": "EddieRand <EddieRand@users.noreply.github.com>"
+    }
+  },
+  "attestation_metadata": {},
+  "remote_transcripts": {}
+}
