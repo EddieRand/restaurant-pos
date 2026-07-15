@@ -60,6 +60,11 @@ class PlaceOrderUseCase(
             val taxRate = item.taxRateId?.let { regionConfig.taxRateById(it) }
             taxRate?.taxOn(item.lineTotalMinorUnit) ?: 0L
         }
+        val serviceCharge = if (regionConfig.serviceChargeRatePermille > 0) {
+            subtotal * regionConfig.serviceChargeRatePermille / 1000
+        } else {
+            0L
+        }
 
         // Self-pickup orders (no table) get a daily pickup number for the pickup display.
         val pickupCode = if (order.tableId == null && order.pickupCode == null) {
@@ -73,6 +78,7 @@ class PlaceOrderUseCase(
             status = placedStatus,
             subtotalMinorUnit = subtotal,
             taxTotalMinorUnit = taxTotal,
+            serviceChargeMinorUnit = serviceCharge,
             operatorId = params.operatorId.ifBlank { order.operatorId },
             pickupCode = pickupCode,
             updatedAt = now,
