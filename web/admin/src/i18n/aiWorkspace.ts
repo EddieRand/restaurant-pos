@@ -83,6 +83,13 @@ export const aiWorkspaceCopy = {
     AI_PROVIDER_UNAVAILABLE: 'AI 服务暂时不可用。',
     AI_INVALID_RESPONSE: 'AI 返回内容无法安全验证。',
     AI_TIMEOUT: 'AI 请求超时，请重试。',
+    AI_TARGET_AMBIGUOUS: '指令未唯一匹配到菜品（无匹配或匹配多个）。请指明具体菜品名后重试。',
+    AI_AGENT_DISABLED: 'AI 改价功能当前未开启，请联系管理员。',
+    AI_PROPOSAL_NOT_FOUND: '方案不存在或已失效，无法执行。请重新向 AI 提出改价。',
+    AI_PROPOSAL_STALE: '菜单价格在方案生成后已变化，此方案作废。请重新向 AI 提出改价以获取最新价格。',
+    AI_PROPOSAL_EXPIRED: '方案已超过确认时限，无法执行。请重新向 AI 提出改价。',
+    AI_PROPOSAL_ALREADY_EXECUTED: '该方案此前已执行，未重复改价。已为你恢复执行结果与审计编号。',
+    AI_IDEMPOTENCY_CONFLICT: '提交状态冲突，此方案不能再执行。请重新向 AI 提出改价。',
   } as Record<string, string>,
 }
 
