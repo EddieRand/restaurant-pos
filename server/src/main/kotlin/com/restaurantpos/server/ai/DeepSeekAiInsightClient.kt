@@ -15,6 +15,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.math.BigDecimal
 import java.time.Duration
 
 class DeepSeekAiInsightClient(
@@ -28,15 +29,34 @@ class DeepSeekAiInsightClient(
     private val json = Json { ignoreUnknownKeys = true }
 
     override suspend fun generate(metrics: AiInsightMetrics, locale: String): AiGeneratedInsight = withContext(Dispatchers.IO) {
+        val formattedMoney = buildJsonObject {
+            put("grossRevenue", formatMoney(metrics.grossRevenueMinorUnit, metrics))
+            put("netRevenue", formatMoney(metrics.netRevenueMinorUnit, metrics))
+            put("averageOrderValue", formatMoney(metrics.averageOrderValueMinorUnit, metrics))
+            put("totalDiscount", formatMoney(metrics.totalDiscountMinorUnit, metrics))
+            put("totalRefund", formatMoney(metrics.totalRefundMinorUnit, metrics))
+            put("previousPeriodNetRevenue", formatMoney(metrics.previousPeriodNetRevenueMinorUnit, metrics))
+            put("paymentMethods", metrics.paymentMethodBreakdown.entries.joinToString(", ") { (method, amount) ->
+                "$method=${formatMoney(amount, metrics)}"
+            })
+            put("topItemRevenue", metrics.topItems.joinToString(", ") { item ->
+                "${item.name}=${formatMoney(item.revenueMinorUnit, metrics)}"
+            })
+        }
         val prompt = """
             You are a restaurant operations analyst. Explain only the supplied aggregate data; never invent values.
             Return JSON with exactly: headline, summary, observations, actions.
             observations must contain objects with severity (positive|neutral|warning), title, detail, evidenceKeys.
             actions must contain exactly three objects with priority (high|medium|low), title, reason.
-            Write in locale $locale. Monetary values are integer minor units. No markdown.
+            Write in locale $locale. Never calculate business values yourself.
+            When mentioning money, copy the server-formatted monetary evidence verbatim and never repeat raw minor-unit integers.
+            When mentioning period changes, use only the supplied basis-point fields (100 basis points = 1%). No markdown.
 
-            Aggregate data:
+            Aggregate data (raw values are for evidence-key matching only):
             ${json.encodeToString(metrics)}
+
+            Server-formatted monetary evidence:
+            $formattedMoney
         """.trimIndent()
         val payload = buildJsonObject {
             put("model", model)
@@ -85,4 +105,7 @@ class DeepSeekAiInsightClient(
         runCatching { json.decodeFromString<AiGeneratedInsight>(content) }
             .getOrElse { throw AiProviderException("AI_INVALID_RESPONSE", "DeepSeek returned invalid JSON", true) }
     }
+
+    private fun formatMoney(minor: Long, metrics: AiInsightMetrics): String =
+        "${metrics.currencyCode} ${BigDecimal.valueOf(minor).movePointLeft(metrics.minorUnitDigits).setScale(metrics.minorUnitDigits).toPlainString()}"
 }

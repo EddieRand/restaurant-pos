@@ -4,6 +4,7 @@ import com.restaurantpos.server.auth.JwtConfig
 import com.restaurantpos.server.auth.requirePermission
 import com.restaurantpos.server.ai.AiInsightService
 import com.restaurantpos.server.ai.AiPriceAgentService
+import com.restaurantpos.server.ai.AiWorkspaceService
 import com.restaurantpos.server.db.DatabaseFactory
 import com.restaurantpos.server.model.ErrorResponse
 import com.restaurantpos.server.model.AiAgentErrorResponse
@@ -88,7 +89,7 @@ fun Application.configureAuth() {
                 else JWTPrincipal(credential.payload)
             }
             challenge { _, _ ->
-                if (call.request.uri.startsWith("/admin/ai/price-proposals")) {
+                if (call.request.uri.startsWith("/admin/ai/price-proposals") || call.request.uri.startsWith("/admin/ai/workspace")) {
                     call.respond(HttpStatusCode.Unauthorized, AiAgentErrorResponse("AI_UNAUTHORIZED", "Missing or invalid token", false))
                 } else {
                     call.respond(HttpStatusCode.Unauthorized, ErrorResponse("Missing or invalid token"))
@@ -101,6 +102,7 @@ fun Application.configureAuth() {
 fun Application.configureRouting(
     aiInsightService: AiInsightService = AiInsightService.fromEnvironment(),
     aiPriceAgentService: AiPriceAgentService = AiPriceAgentService.fromEnvironment(),
+    aiWorkspaceService: AiWorkspaceService = AiWorkspaceService.fromEnvironment(aiInsightService, aiPriceAgentService),
 ) {
     routing {
         get("/health") {
@@ -118,7 +120,8 @@ fun Application.configureRouting(
         adminOrderRoutes()
         adminReportRoutes()
         adminAiRoutes(aiInsightService)
-        adminAiPriceRoutes(aiPriceAgentService)
+        adminAiPriceRoutes(aiPriceAgentService, aiWorkspaceService)
+        adminAiWorkspaceRoutes(aiWorkspaceService)
         adminUserRoutes()
         adminRoleRoutes()
         adminSettingsRoutes()
