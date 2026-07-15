@@ -1,0 +1,23 @@
+web/admin/src/components/AiOperatingInsightCard.tsx
+  s_1c80a6f4eb339d::t_7689308851dbd5 6,137-139,153
+web/admin/src/i18n/ai.ts
+  s_1c80a6f4eb339d::t_5f6a3881fab619 17-30,59-72,92-97
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e8969b210e52d17aa4271495eb52dda258467f37",
+  "prompts": {},
+  "sessions": {
+    "s_1c80a6f4eb339d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1a255ba6-873e-4a8d-ba13-d703ff828bfb",
+        "model": "unknown"
+      },
+      "human_author": "EddieRand <EddieRand@users.noreply.github.com>"
+    }
+  },
+  "attestation_metadata": {},
+  "remote_transcripts": {}
+}
