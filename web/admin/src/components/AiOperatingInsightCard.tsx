@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { aiInsightApi, type AiActionPriority, type AiObservationSeverity, type OperatingInsightResponse } from '../api/ai'
 import { fmtMoney } from '../api/reports'
-import { getAiCopy, interpolate } from '../i18n/ai'
+import { getAiCopy, interpolate, prettifyEvidenceKey } from '../i18n/ai'
 
 type ErrorKind = 'unauthorized' | 'quota' | 'rateLimited' | 'unavailable' | 'timeout' | 'generic'
 
@@ -134,7 +134,9 @@ export default function AiOperatingInsightCard({ fromMs, toMs }: { fromMs: numbe
                       <h5 className="text-sm font-semibold">{observation.title}</h5>
                       <p className="mt-1 text-xs leading-5 opacity-90">{observation.detail}</p>
                       {observation.evidenceKeys.length > 0 && (
-                        <p className="mt-3 text-[11px] opacity-70">{copy.evidence}: {observation.evidenceKeys.join(' · ')}</p>
+                        <p className="mt-3 text-[11px] opacity-70">
+                          {copy.evidence}: {observation.evidenceKeys.map(key => copy.evidenceLabels[key] ?? prettifyEvidenceKey(key)).join(' · ')}
+                        </p>
                       )}
                     </article>
                   ))}
@@ -148,7 +150,7 @@ export default function AiOperatingInsightCard({ fromMs, toMs }: { fromMs: numbe
                 <div className="space-y-2">
                   {insight.actions.map((action, index) => (
                     <article key={`${action.title}-${index}`} className="flex gap-3 rounded-lg border border-gray-100 bg-white/80 p-4">
-                      <span className={`mt-0.5 h-fit rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${priorityStyles[action.priority]}`}>{action.priority}</span>
+                      <span className={`mt-0.5 h-fit shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${priorityStyles[action.priority]}`}>{copy.priorityLabels[action.priority]}</span>
                       <div>
                         <h5 className="text-sm font-semibold text-gray-800">{action.title}</h5>
                         <p className="mt-1 text-xs leading-5 text-gray-500">{action.reason}</p>
