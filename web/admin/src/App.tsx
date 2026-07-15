@@ -19,6 +19,7 @@ import CdsManagementPage from './pages/CdsManagementPage'
 import QrOrderingPage from './pages/QrOrderingPage'
 import ReservationsPage from './pages/ReservationsPage'
 import ReservationSettingsPage from './pages/ReservationSettingsPage'
+import AiWorkspacePage from './pages/AiWorkspacePage'
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
           }
         >
           <Route index element={<ErrorBoundary label="Dashboard"><DashboardPage /></ErrorBoundary>} />
+          <Route path="ai" element={<ErrorBoundary label="AI Workspace"><AiWorkspacePage /></ErrorBoundary>} />
           <Route path="menu" element={<ErrorBoundary label="Menu"><MenuPage /></ErrorBoundary>} />
           <Route path="crm" element={<ErrorBoundary label="CRM"><CRMPage /></ErrorBoundary>} />
           <Route path="reservations" element={<ErrorBoundary label="Reservations"><ReservationsPage /></ErrorBoundary>} />
