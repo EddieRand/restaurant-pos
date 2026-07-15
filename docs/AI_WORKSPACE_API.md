@@ -36,7 +36,7 @@ GET /admin/ai/workspace/sessions
 GET /admin/ai/workspace/sessions/{sessionId}
 ```
 
-Sessions are private to their creating admin user. The detail response contains persisted messages, runs, steps, results, proposal references, and errors.
+Sessions are private to their creating admin user. The detail response contains persisted messages, runs, steps, results, proposal references, and errors. Every run includes its originating `messageId`, so restored clients can attach results to the correct conversation turn.
 
 ## Send a message
 

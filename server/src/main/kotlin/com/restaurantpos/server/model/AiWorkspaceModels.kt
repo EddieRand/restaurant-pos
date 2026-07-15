@@ -139,6 +139,7 @@ data class AiWorkspaceMessageDto(
 @Serializable
 data class AiWorkspaceRunDto(
     val runId: String,
+    val messageId: String,
     val status: String,
     val createdAt: Long,
     val completedAt: Long? = null,
