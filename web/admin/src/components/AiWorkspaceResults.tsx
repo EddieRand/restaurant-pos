@@ -7,8 +7,9 @@ import type {
   AiWorkspaceStep,
 } from '../api/aiWorkspace'
 import { aiWorkspaceCopy as copy, workspaceErrorMessage } from '../i18n/aiWorkspace'
+import { fmtMoney } from '../api/reports'
 
-function makeMoneyFormatter(currencyCode = 'CNY', minorUnitDigits = 2) {
+function makeMoneyFormatter(currencyCode: string, minorUnitDigits: number) {
   const divisor = Math.pow(10, minorUnitDigits)
   let formatter: Intl.NumberFormat
   try {
@@ -38,7 +39,7 @@ function statusClass(status: AiWorkspaceStep['status']) {
 
 function EvidenceValue({ evidence }: { evidence: AiWorkspaceEvidence }) {
   const value = evidence.unit === 'MINOR_UNIT'
-    ? makeMoneyFormatter()(evidence.numericValue)
+    ? fmtMoney(evidence.numericValue)
     : evidence.unit === 'BASIS_POINTS'
       ? formatPercent(evidence.numericValue)
       : new Intl.NumberFormat('zh-CN').format(evidence.numericValue)
@@ -58,8 +59,8 @@ function InsightResult({ step }: { step: AiWorkspaceStep }) {
   if (!insight) return null
   const snapshot = [
     [copy.insight.orders, String(insight.snapshot.orderCount)],
-    [copy.insight.revenue, makeMoneyFormatter()(insight.snapshot.netRevenueMinorUnit)],
-    [copy.insight.averageOrder, makeMoneyFormatter()(insight.snapshot.averageOrderValueMinorUnit)],
+    [copy.insight.revenue, fmtMoney(insight.snapshot.netRevenueMinorUnit)],
+    [copy.insight.averageOrder, fmtMoney(insight.snapshot.averageOrderValueMinorUnit)],
     [copy.insight.guests, String(insight.snapshot.guestCount)],
   ]
   return (
