@@ -21,8 +21,8 @@ apiClient.interceptors.response.use(
   (res) => res,
   (err) => {
     const status = err.response?.status
-    const isAiInsightRequest = err.config?.url === '/admin/ai/operating-insight'
-    if (status === 401 && !isAiInsightRequest && import.meta.env.VITE_MOCK_AUTH !== 'true') {
+    const isAiRequest = String(err.config?.url ?? '').startsWith('/admin/ai/')
+    if (status === 401 && !isAiRequest && import.meta.env.VITE_MOCK_AUTH !== 'true') {
       localStorage.removeItem('pos_admin_token')
       localStorage.removeItem('pos_admin_user')
       window.location.href = '/login'

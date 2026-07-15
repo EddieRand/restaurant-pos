@@ -33,6 +33,7 @@ export const aiWorkspaceCopy = {
   today: '今天',
   last7Days: '近 7 天',
   last30Days: '近 30 天',
+  dashboardRange: 'Dashboard 所选周期',
   user: '你',
   assistant: 'AI 助手',
   runResults: '执行过程',

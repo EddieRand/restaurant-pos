@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { aiInsightApi, type AiActionPriority, type AiObservationSeverity, type OperatingInsightResponse } from '../api/ai'
 import { fmtMoney } from '../api/reports'
 import { getAiCopy, interpolate, prettifyEvidenceKey } from '../i18n/ai'
@@ -40,6 +41,8 @@ const priorityStyles: Record<AiActionPriority, string> = {
 
 export default function AiOperatingInsightCard({ fromMs, toMs }: { fromMs: number; toMs: number }) {
   const { i18n } = useTranslation()
+  const navigate = useNavigate()
+  const location = useLocation()
   const copy = useMemo(() => getAiCopy(i18n.language), [i18n.language])
   const [insight, setInsight] = useState<OperatingInsightResponse | null>(null)
   const [loading, setLoading] = useState(false)
@@ -74,14 +77,23 @@ export default function AiOperatingInsightCard({ fromMs, toMs }: { fromMs: numbe
             <h2 className="text-lg font-semibold text-gray-900">{copy.title}</h2>
             <p className="mt-1 text-sm leading-6 text-gray-500">{copy.description}</p>
           </div>
-          <button
-            type="button"
-            className="btn-primary shrink-0 disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={loading}
-            onClick={generate}
-          >
-            {loading ? copy.generating : insight ? copy.regenerate : error ? copy.retry : copy.generate}
-          </button>
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              className="btn-secondary shrink-0"
+              onClick={() => navigate('/ai', { state: { fromMs, toMs, fromRoute: location.pathname } })}
+            >
+              {insight ? copy.continueInWorkspace : copy.openWorkspace} →
+            </button>
+            <button
+              type="button"
+              className="btn-primary shrink-0 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={loading}
+              onClick={generate}
+            >
+              {loading ? copy.generating : insight ? copy.regenerate : error ? copy.retry : copy.generate}
+            </button>
+          </div>
         </div>
 
         {error && (
