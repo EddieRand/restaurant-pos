@@ -1,5 +1,6 @@
 package com.restaurantpos.server.routes
 
+import com.restaurantpos.server.auth.requirePermission
 import com.restaurantpos.server.db.tables.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
@@ -13,9 +14,11 @@ import kotlin.random.Random
 
 /* ── TEMPORARY: one-off mock-data seeding for local dev preview ──────────── */
 
-fun Route.devSeedRoutes() {
+fun Route.devSeedRoutes(enabled: Boolean = System.getenv("DEMO_MODE")?.equals("true", ignoreCase = true) == true) {
+    if (!enabled) return
     authenticate("jwt") {
         post("/admin/dev/seed-mock-data") {
+            if (!call.requirePermission("report.daily")) return@post
             val summary = transaction {
                 val now = System.currentTimeMillis()
                 val day = 24 * 60 * 60 * 1000L
