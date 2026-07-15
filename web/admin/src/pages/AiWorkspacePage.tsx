@@ -276,14 +276,15 @@ export default function AiWorkspacePage() {
       const code = aiWorkspaceErrorCode(executeError) ?? 'AI_INVALID_REQUEST'
       // Only genuinely transient provider failures may be retried with the same proposal.
       const retryable = code === 'AI_RATE_LIMITED' || code === 'AI_PROVIDER_UNAVAILABLE' || code === 'AI_TIMEOUT'
-      // Already executed: the price change is done — pull the persisted result + audit id.
-      if (code === 'AI_PROPOSAL_ALREADY_EXECUTED' && activeSession) {
-        await refreshSession(activeSession.sessionId)
-      }
       setExecuteErrorByStep(current => ({
         ...current,
         [step.stepId]: { code, message: workspaceErrorMessage(code, executeError instanceof Error ? executeError.message : undefined), retryable },
       }))
+      // Already executed: the price change is done — best-effort restore the persisted
+      // result + audit id. Keep the step error visible if that refresh itself fails.
+      if (code === 'AI_PROPOSAL_ALREADY_EXECUTED' && activeSession) {
+        await refreshSession(activeSession.sessionId).catch(() => undefined)
+      }
     } finally {
       setExecutingStepId(null)
     }
