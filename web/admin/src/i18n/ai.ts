@@ -14,6 +14,20 @@ const en = {
   observations: 'Observations',
   actions: 'Recommended actions',
   evidence: 'Evidence',
+  priorityLabels: { high: 'High', medium: 'Medium', low: 'Low' },
+  evidenceLabels: {
+    orderCount: 'Orders',
+    grossRevenue: 'Gross revenue',
+    netRevenue: 'Net revenue',
+    averageOrderValue: 'Avg. order',
+    guestCount: 'Guests',
+    discount: 'Discounts',
+    refund: 'Refunds',
+    paymentMethods: 'Payment mix',
+    topItems: 'Top items',
+    peakHours: 'Peak hours',
+    periodComparison: 'Period comparison',
+  } as Record<string, string>,
   generatedAt: 'Generated {{time}} · {{model}}',
   disclaimer: 'AI recommendations are for operational reference only. They cannot change orders, menus, inventory, or settings.',
   errors: {
@@ -42,6 +56,20 @@ const zh: typeof en = {
   observations: '经营观察',
   actions: '行动建议',
   evidence: '依据',
+  priorityLabels: { high: '高', medium: '中', low: '低' },
+  evidenceLabels: {
+    orderCount: '订单数',
+    grossRevenue: '毛营业额',
+    netRevenue: '净营业额',
+    averageOrderValue: '均单价',
+    guestCount: '接待客数',
+    discount: '折扣',
+    refund: '退款',
+    paymentMethods: '支付方式',
+    topItems: '热销菜品',
+    peakHours: '高峰时段',
+    periodComparison: '环比',
+  } as Record<string, string>,
   generatedAt: '生成于 {{time}} · {{model}}',
   disclaimer: 'AI 建议仅供经营参考，不能修改订单、菜单、库存或系统设置。',
   errors: {
@@ -60,4 +88,10 @@ export function getAiCopy(locale: string) {
 
 export function interpolate(template: string, values: Record<string, string>) {
   return Object.entries(values).reduce((result, [key, value]) => result.replace(`{{${key}}}`, value), template)
+}
+
+/** Human-readable fallback for an evidence key outside the known map (camelCase → "Camel case"). */
+export function prettifyEvidenceKey(key: string) {
+  const spaced = key.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ').trim()
+  return spaced ? spaced.charAt(0).toUpperCase() + spaced.slice(1) : key
 }
