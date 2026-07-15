@@ -163,7 +163,7 @@ class AiWorkspaceService(
         scope.launch {
             processRun(actorId, runId, request, expectedTools, fromMs, toMs)
         }
-        return AiWorkspaceMessageAcceptedResponse(pathSessionId, messageId, runId)
+        return AiWorkspaceMessageAcceptedResponse(pathSessionId, messageId, runId, "QUEUED")
     }
 
     fun events(actorId: String, runId: String, afterSequence: Long): List<AiWorkspaceEventDto> {
