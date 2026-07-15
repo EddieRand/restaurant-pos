@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { orderApi, fmtMoney, fmtDateTime, type OrderSummary, type OrderDetail, type Payment } from '../api/reports'
 import { userApi, type PosUser, paymentMethodApi, type PaymentMethodConfig } from '../api/admin'
 import DatePicker from '../components/DatePicker'
+import { useVisiblePolling } from '../hooks/useVisiblePolling'
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-gray-100 text-gray-500',
@@ -97,7 +98,7 @@ export default function OrdersPage() {
       .finally(() => setLoading(false))
   }, [query, statusFilter, operatorFilter, paymentMethodFilter, dateFrom, dateTo, page])
 
-  useEffect(() => { load() }, [load])
+  useVisiblePolling(load)
   useEffect(() => { userApi.list().then(setEmployees).catch(() => {}) }, [])
 
   function openDetail(id: string) {
