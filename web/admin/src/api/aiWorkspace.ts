@@ -155,6 +155,7 @@ export class AiWorkspaceApiError extends Error {
 export function aiWorkspaceErrorCode(error: unknown): string | undefined {
   if (error instanceof AiWorkspaceApiError) return error.code
   if (!axios.isAxiosError(error)) return undefined
+  if (!error.response) return 'AI_NETWORK_ERROR'
   const data = error.response?.data
   return typeof data === 'object' && data !== null && 'code' in data ? String(data.code) : undefined
 }

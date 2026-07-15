@@ -16,16 +16,7 @@ import {
 import AiWorkspaceRunPanel from '../components/AiWorkspaceResults'
 import { aiWorkspaceCopy as copy, workspaceErrorMessage } from '../i18n/aiWorkspace'
 
-type PeriodPreset = 'today' | '7d' | '30d'
 type StreamState = 'live' | 'reconnecting' | 'complete'
-
-function periodRange(preset: PeriodPreset) {
-  const to = new Date(); to.setHours(23, 59, 59, 999)
-  const from = new Date(); from.setHours(0, 0, 0, 0)
-  if (preset === '7d') from.setDate(from.getDate() - 6)
-  if (preset === '30d') from.setDate(from.getDate() - 29)
-  return { fromMs: from.getTime(), toMs: to.getTime() }
-}
 
 function isRunTerminal(status: string) {
   return ['COMPLETED', 'SUCCEEDED', 'FAILED', 'CANCELLED'].includes(status.toUpperCase())
@@ -74,10 +65,8 @@ export default function AiWorkspacePage() {
   const [activeSession, setActiveSession] = useState<AiWorkspaceSession | null>(null)
   const [expert, setExpert] = useState<AiWorkspaceExpert>('AUTO')
   const [message, setMessage] = useState('')
-  const [period, setPeriod] = useState<PeriodPreset>('today')
   const entryState = location.state as { fromMs?: number; toMs?: number; fromRoute?: string } | null
   const hasEntryRange = Number.isFinite(entryState?.fromMs) && Number.isFinite(entryState?.toMs) && entryState!.fromMs! < entryState!.toMs!
-  const [entryRangeActive, setEntryRangeActive] = useState(hasEntryRange)
   const [loadingSessions, setLoadingSessions] = useState(true)
   const [loadingSession, setLoadingSession] = useState(false)
   const [sending, setSending] = useState(false)
@@ -93,12 +82,7 @@ export default function AiWorkspacePage() {
   const activeSessionIdRef = useRef<string | null>(null)
   const cursorByRunRef = useRef<Record<string, number>>({})
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
-  const range = useMemo(
-    () => entryRangeActive && hasEntryRange
-      ? { fromMs: entryState!.fromMs!, toMs: entryState!.toMs! }
-      : periodRange(period),
-    [entryRangeActive, entryState, hasEntryRange, period],
-  )
+  const entryRange = hasEntryRange ? { fromMs: entryState!.fromMs!, toMs: entryState!.toMs! } : {}
   const contextRoute = entryState?.fromRoute ?? location.pathname
 
   useEffect(() => { activeSessionIdRef.current = activeSession?.sessionId ?? null }, [activeSession?.sessionId])
@@ -238,7 +222,7 @@ export default function AiWorkspacePage() {
       if (!session) session = await createSession()
       if (!session) return
       const accepted = await aiWorkspaceApi.sendMessage(session.sessionId, expert, content, {
-        ...range,
+        ...entryRange,
         currentRoute: contextRoute,
       })
       const optimisticMessage = { messageId: accepted.messageId, role: 'user', content, createdAt: Date.now() }
@@ -310,7 +294,7 @@ export default function AiWorkspacePage() {
 
         <div className="flex-1 overflow-y-auto">
           <div className="mx-auto flex min-h-full max-w-5xl flex-col px-3 py-4 sm:px-6 sm:py-6">
-            <section className="mb-5"><div className="mb-2 flex items-end justify-between gap-3"><div><p className="text-sm font-semibold text-gray-900">{copy.expertLabel}</p><p className="hidden text-xs text-gray-400 sm:block">{copy.expertDescription}</p></div><div className="flex rounded-lg bg-gray-100 p-1 text-[11px]">{([['today', copy.today], ['7d', copy.last7Days], ['30d', copy.last30Days]] as [PeriodPreset, string][]).map(([key, label]) => <button key={key} type="button" onClick={() => { setEntryRangeActive(false); setPeriod(key) }} className={`rounded-md px-2 py-1.5 sm:px-3 ${!entryRangeActive && period === key ? 'bg-white font-medium text-gray-800 shadow-sm' : 'text-gray-500'}`}>{label}</button>)}</div></div><ExpertSelector value={expert} onChange={setExpert} /></section>
+            <section className="mb-5"><div className="mb-2"><p className="text-sm font-semibold text-gray-900">{copy.expertLabel}</p><p className="hidden text-xs text-gray-400 sm:block">{copy.expertDescription}</p></div><ExpertSelector value={expert} onChange={setExpert} /></section>
 
             {error && <div role="alert" className="mb-4 flex items-start justify-between gap-3 rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-700"><span>{error}</span><button type="button" className="shrink-0 font-semibold underline" onClick={() => setError(null)}>{copy.close}</button></div>}
 
@@ -326,7 +310,7 @@ export default function AiWorkspacePage() {
           </div>
         </div>
 
-        <footer className="border-t border-gray-200 bg-white px-3 py-3 sm:px-6 sm:py-4"><div className="mx-auto max-w-5xl"><div className="flex items-end gap-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-sm focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100"><textarea value={message} onChange={event => setMessage(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void sendMessage() } }} rows={1} placeholder={copy.inputPlaceholder} className="max-h-32 min-h-[42px] flex-1 resize-none border-0 bg-transparent px-2 py-2.5 text-sm leading-5 text-gray-900 outline-none placeholder:text-gray-400" disabled={sending} /><button type="button" className="btn-primary h-[42px] shrink-0 px-3 sm:px-5" disabled={!message.trim() || sending || streamState === 'live' || streamState === 'reconnecting'} onClick={() => { void sendMessage() }}><span className="hidden sm:inline">{sending ? copy.sending : copy.send}</span><span className="sm:hidden">↑</span></button></div><div className="mt-2 flex items-center justify-between gap-3 text-[10px] text-gray-400"><span>{copy.disclaimer}</span><span className="hidden shrink-0 sm:inline">{copy.period}：{entryRangeActive ? copy.dashboardRange : period === 'today' ? copy.today : period === '7d' ? copy.last7Days : copy.last30Days}</span></div></div></footer>
+        <footer className="border-t border-gray-200 bg-white px-3 py-3 sm:px-6 sm:py-4"><div className="mx-auto max-w-5xl"><div className="flex items-end gap-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-sm focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100"><textarea value={message} onChange={event => setMessage(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void sendMessage() } }} rows={1} placeholder={copy.inputPlaceholder} className="max-h-32 min-h-[42px] flex-1 resize-none border-0 bg-transparent px-2 py-2.5 text-sm leading-5 text-gray-900 outline-none placeholder:text-gray-400" disabled={sending} /><button type="button" className="btn-primary h-[42px] shrink-0 px-3 sm:px-5" disabled={!message.trim() || sending || streamState === 'live' || streamState === 'reconnecting'} onClick={() => { void sendMessage() }}><span className="hidden sm:inline">{sending ? copy.sending : copy.send}</span><span className="sm:hidden">↑</span></button></div><div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[10px] text-gray-400"><span>{copy.disclaimer}</span><span>{copy.periodHint}</span></div></div></footer>
       </div>
 
       {mobileSessionsOpen && <div className="fixed inset-0 z-50 bg-black/30 xl:hidden" onClick={() => setMobileSessionsOpen(false)}><aside className="h-full w-[min(320px,86vw)] bg-white shadow-xl" onClick={event => event.stopPropagation()}><SessionList sessions={sessions} activeId={activeSession?.sessionId} loading={loadingSessions} onSelect={selectSession} onNew={() => { void createSession() }} /></aside></div>}

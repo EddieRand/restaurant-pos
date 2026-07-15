@@ -25,8 +25,11 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
+import java.time.DayOfWeek
+import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
+import java.time.ZoneId
+import java.time.temporal.TemporalAdjusters
 import java.util.UUID
 
 class AiWorkspaceService(
@@ -120,7 +123,7 @@ class AiWorkspaceService(
         require(pathSessionId == request.sessionId) { "Path and body session IDs must match" }
         require(request.message.trim().length in 1..2_000) { "message must contain 1 to 2000 characters" }
         requireLocale(request.locale)
-        val (fromMs, toMs) = resolvePeriod(request.context)
+        val (fromMs, toMs) = resolvePeriod(request.message, request.context)
         val expectedTools = toolsForExpert(request.expert).intersect(allowedTools)
         val timestamp = now()
         val messageId = newId()
@@ -319,7 +322,35 @@ class AiWorkspaceService(
         else -> AiWorkspaceStepKind.ANALYSIS
     }
 
-    private fun resolvePeriod(context: AiWorkspaceContextDto): Pair<Long, Long> {
+    private fun resolvePeriod(message: String, context: AiWorkspaceContextDto): Pair<Long, Long> {
+        val instant = Instant.ofEpochMilli(now())
+        val zone = ZoneId.systemDefault()
+        val today = instant.atZone(zone).toLocalDate()
+        val current = instant.toEpochMilli()
+        fun startOf(date: LocalDate) = date.atStartOfDay(zone).toInstant().toEpochMilli()
+
+        // Natural-language periods override the optional page context. The input box is
+        // the primary interaction: operators should be able to say “昨天” or “近 7 天”
+        // without first configuring a separate date control.
+        val normalized = message.replace(" ", "")
+        when {
+            listOf("昨天", "昨日").any(normalized::contains) -> {
+                val yesterday = today.minusDays(1)
+                return startOf(yesterday) to startOf(today) - 1
+            }
+            listOf("近7天", "最近7天", "过去7天", "近七天", "最近七天", "过去七天").any(normalized::contains) ->
+                return startOf(today.minusDays(6)) to current
+            listOf("近30天", "最近30天", "过去30天", "近三十天", "最近三十天", "过去三十天").any(normalized::contains) ->
+                return startOf(today.minusDays(29)) to current
+            listOf("本周", "这周", "本星期", "这个星期").any(normalized::contains) -> {
+                val monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                return startOf(monday) to current
+            }
+            listOf("本月", "这个月", "当月").any(normalized::contains) ->
+                return startOf(today.withDayOfMonth(1)) to current
+            listOf("今天", "今日").any(normalized::contains) ->
+                return startOf(today) to current
+        }
         if (context.fromMs != null || context.toMs != null) {
             val from = context.fromMs ?: throw IllegalArgumentException("fromMs is required with toMs")
             val to = context.toMs ?: throw IllegalArgumentException("toMs is required with fromMs")
@@ -327,8 +358,7 @@ class AiWorkspaceService(
             require(to - from <= MAX_RANGE_MS) { "Date range must not exceed 90 days" }
             return from to to
         }
-        val from = LocalDate.now(ZoneOffset.UTC).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
-        return from to now()
+        return startOf(today) to current
     }
 
     private fun requireLocale(locale: String) {

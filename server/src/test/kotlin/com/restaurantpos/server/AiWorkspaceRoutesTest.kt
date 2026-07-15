@@ -25,6 +25,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.time.Instant
+import java.time.ZoneId
 import java.util.UUID
 
 class AiWorkspaceRoutesTest {
@@ -93,7 +95,7 @@ class AiWorkspaceRoutesTest {
             setBody(
                 AiWorkspaceMessageRequest(
                     sessionId,
-                    message = "分析今天的营业情况，并把宫保鸡丁涨价5元",
+                    message = "分析营业情况，并把宫保鸡丁涨价5元",
                     context = AiWorkspaceContextDto(1_000, 2_000, "/"),
                 ),
             )
@@ -201,6 +203,48 @@ class AiWorkspaceRoutesTest {
         assertEquals(AiWorkspaceStepStatus.FAILED, step.status)
         assertEquals("AI_PERMISSION_DENIED", step.error?.code)
         assertTrue(step.proposalId == null)
+    }
+
+    @Test
+    fun `natural language period overrides page context`() = testApplication {
+        val fixedNow = Instant.parse("2026-07-16T06:30:00Z").toEpochMilli()
+        val model = FakeWorkspaceModel(
+            AiWorkspacePlan(
+                listOf(AiWorkspacePlannedStep(AiWorkspaceTools.REPORT_QUERY, "查询昨日经营", "昨天的营业情况", "SUMMARY")),
+            ),
+        )
+        val insight = insightService()
+        val price = AiPriceAgentService(null, enabled = true, priceUpdateEnabled = true)
+        val workspace = AiWorkspaceService(
+            model,
+            insight,
+            price,
+            enabled = true,
+            permissionChecker = { _, _ -> true },
+            now = { fixedNow },
+        )
+        application { configurePlugins(); configureAuth(); configureRouting(insight, price, workspace) }
+        val client = createClient { install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) } }
+        val sessionId = client.post("/admin/ai/workspace/sessions") {
+            adminAuth(); contentType(ContentType.Application.Json); setBody(CreateAiWorkspaceSessionRequest())
+        }.body<AiWorkspaceSessionDto>().sessionId
+
+        client.post("/admin/ai/workspace/sessions/$sessionId/messages") {
+            adminAuth(); contentType(ContentType.Application.Json)
+            setBody(
+                AiWorkspaceMessageRequest(
+                    sessionId,
+                    message = "分析昨天的营业情况",
+                    context = AiWorkspaceContextDto(1_000, 2_000, "/dashboard"),
+                ),
+            )
+        }
+
+        val period = awaitRun(client, sessionId).runs.single().steps.single().result!!.query!!.period
+        val zone = ZoneId.systemDefault()
+        val today = Instant.ofEpochMilli(fixedNow).atZone(zone).toLocalDate()
+        assertEquals(today.minusDays(1).atStartOfDay(zone).toInstant().toEpochMilli(), period.fromMs)
+        assertEquals(today.atStartOfDay(zone).toInstant().toEpochMilli() - 1, period.toMs)
     }
 
     private suspend fun awaitRun(
