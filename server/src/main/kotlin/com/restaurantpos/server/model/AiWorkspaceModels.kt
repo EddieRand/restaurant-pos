@@ -56,7 +56,7 @@ data class AiWorkspaceMessageAcceptedResponse(
     val sessionId: String,
     val messageId: String,
     val runId: String,
-    val status: String = "QUEUED",
+    val status: String,
 )
 
 @Serializable
