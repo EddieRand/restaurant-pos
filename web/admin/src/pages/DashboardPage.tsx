@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../api/client'
 import { fmtMoney, orderApi, reportApi, type TopItem } from '../api/reports'
 import { ingredientApi, type Ingredient, paymentMethodApi, type PaymentMethodConfig } from '../api/admin'
 import DatePicker from '../components/DatePicker'
+import AiOperatingInsightCard from '../components/AiOperatingInsightCard'
+import { useVisiblePolling } from '../hooks/useVisiblePolling'
 
 // ── Date range presets (mirrors ReportPage.tsx) ──────────────────────────────
 type Preset = 'today' | 'yesterday' | 'week' | 'month' | 'custom'
@@ -84,17 +86,16 @@ export default function DashboardPage() {
     })
   }, [])
 
-  useEffect(() => {
+  const loadReport = useCallback(() => {
     const [from, to] = rangeFor(preset, customFrom, customTo)
-    setLoading(true)
-    setError(null)
-
     apiClient
       .get<ShiftReport>(`/admin/reports/shift?from=${from}&to=${to}`)
-      .then((r) => setReport(r.data))
+      .then((r) => { setReport(r.data); setError(null) })
       .catch(() => setError(t('dashboard.errorLoad')))
       .finally(() => setLoading(false))
   }, [t, preset, customFrom, customTo])
+  useEffect(() => { setLoading(true); setError(null) }, [preset, customFrom, customTo])
+  useVisiblePolling(loadReport)
 
   // Needs-attention: pending QR confirmations, waiter calls, today's top items
   useEffect(() => {
@@ -259,6 +260,11 @@ export default function DashboardPage() {
         <StatCard label={t('dashboard.gross')} value={loading ? '—' : fmt(report?.grossRevenueMinorUnit ?? 0)} />
         <StatCard label={t('dashboard.avgGuest')} value={loading ? '—' : fmt(report?.averageSpendPerGuestMinorUnit ?? 0)} />
       </div>
+
+      <AiOperatingInsightCard
+        fromMs={rangeFor(preset, customFrom, customTo)[0]}
+        toMs={rangeFor(preset, customFrom, customTo)[1]}
+      />
 
       {/* Week vs Last Week comparison */}
       {thisWeek && lastWeek && (
