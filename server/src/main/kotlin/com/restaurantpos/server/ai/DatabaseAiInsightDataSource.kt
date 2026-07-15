@@ -3,13 +3,17 @@ package com.restaurantpos.server.ai
 import com.restaurantpos.server.db.tables.OrderItemsTable
 import com.restaurantpos.server.db.tables.OrdersTable
 import com.restaurantpos.server.db.tables.PaymentsTable
+import com.restaurantpos.server.db.tables.SettingsTable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.intOrNull
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
@@ -83,6 +87,8 @@ class DatabaseAiInsightDataSource : AiInsightDataSource {
             .map { AiPeakHourMetric(hour = it.key, orderCount = it.value) }
 
         val netRevenue = currentOrders.sumOf(::net)
+        val previousNetRevenue = previousOrders.sumOf(::net)
+        val currency = loadCurrencyConfig()
         AiInsightMetrics(
             fromMs = fromMs,
             toMs = toMs,
@@ -97,7 +103,29 @@ class DatabaseAiInsightDataSource : AiInsightDataSource {
             topItems = topItems,
             peakHours = peakHours,
             previousPeriodOrderCount = previousOrders.size,
-            previousPeriodNetRevenueMinorUnit = previousOrders.sumOf(::net),
+            previousPeriodNetRevenueMinorUnit = previousNetRevenue,
+            currencyCode = currency.first,
+            minorUnitDigits = currency.second,
+            orderCountChangeBasisPoints = changeBasisPoints(currentOrders.size.toLong(), previousOrders.size.toLong()),
+            netRevenueChangeBasisPoints = changeBasisPoints(netRevenue, previousNetRevenue),
         )
     }
+
+    private fun loadCurrencyConfig(): Pair<String, Int> {
+        val raw = SettingsTable.selectAll()
+            .where { (SettingsTable.key eq "regionConfig") or (SettingsTable.key eq "region-config") }
+            .firstOrNull()?.get(SettingsTable.value)
+            ?: return "CNY" to 2
+        return runCatching {
+            val value = Json.parseToJsonElement(raw).jsonObject
+            val code = value["currencyCode"]?.jsonPrimitive?.contentOrNull?.uppercase()
+                ?.takeIf { it.matches(Regex("^[A-Z]{3}$")) } ?: "CNY"
+            val digits = value["currencyMinorDigits"]?.jsonPrimitive?.intOrNull
+                ?: value["minorDigits"]?.jsonPrimitive?.intOrNull ?: 2
+            code to digits.coerceIn(0, 4)
+        }.getOrDefault("CNY" to 2)
+    }
+
+    private fun changeBasisPoints(current: Long, previous: Long): Long? =
+        previous.takeIf { it != 0L }?.let { ((current - previous) * 10_000L) / it }
 }
