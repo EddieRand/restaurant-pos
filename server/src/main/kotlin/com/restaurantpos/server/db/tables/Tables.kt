@@ -330,6 +330,49 @@ object SettingsTable : Table("settings") {
     override val primaryKey = PrimaryKey(key)
 }
 
+// ── Controlled AI write plane ───────────────────────────────────────────────
+
+object AiPriceProposalsTable : Table("ai_price_proposals") {
+    val id = varchar("id", 64)
+    val actorId = varchar("actor_id", 64)
+    val instruction = varchar("instruction", 512)
+    val locale = varchar("locale", 32)
+    val status = varchar("status", 24)
+    val tool = varchar("tool", 64)
+    val currencyCode = varchar("currency_code", 8)
+    val minorUnitDigits = integer("minor_unit_digits")
+    val createdAt = long("created_at")
+    val expiresAt = long("expires_at").index()
+    val executedAt = long("executed_at").nullable()
+    override val primaryKey = PrimaryKey(id)
+}
+
+object AiPriceProposalChangesTable : Table("ai_price_proposal_changes") {
+    val proposalId = varchar("proposal_id", 64).index()
+    val itemId = varchar("item_id", 64)
+    val itemName = varchar("item_name", 256)
+    val oldPriceMinorUnit = long("old_price_minor_unit")
+    val newPriceMinorUnit = long("new_price_minor_unit")
+    val deltaMinorUnit = long("delta_minor_unit")
+    val deltaPercentBasisPoints = long("delta_percent_basis_points").nullable()
+    val expectedUpdatedAt = long("expected_updated_at")
+    override val primaryKey = PrimaryKey(proposalId, itemId)
+}
+
+object AiMutationAuditsTable : Table("ai_mutation_audits") {
+    val id = varchar("id", 64)
+    val actorId = varchar("actor_id", 64)
+    val proposalId = varchar("proposal_id", 64).uniqueIndex()
+    val tool = varchar("tool", 64)
+    val entityType = varchar("entity_type", 32)
+    val entityId = varchar("entity_id", 64)
+    val beforeMinorUnit = long("before_minor_unit")
+    val afterMinorUnit = long("after_minor_unit")
+    val idempotencyKey = varchar("idempotency_key", 128).uniqueIndex()
+    val createdAt = long("created_at")
+    override val primaryKey = PrimaryKey(id)
+}
+
 // ── CRM ───────────────────────────────────────────────────────────────────────
 
 object CustomersTable : Table("customers") {
