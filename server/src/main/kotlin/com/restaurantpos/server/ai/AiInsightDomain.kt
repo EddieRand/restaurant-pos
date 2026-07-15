@@ -32,6 +32,10 @@ data class AiInsightMetrics(
     val peakHours: List<AiPeakHourMetric>,
     val previousPeriodOrderCount: Int,
     val previousPeriodNetRevenueMinorUnit: Long,
+    val currencyCode: String = "CNY",
+    val minorUnitDigits: Int = 2,
+    val orderCountChangeBasisPoints: Long? = null,
+    val netRevenueChangeBasisPoints: Long? = null,
 )
 
 @Serializable
