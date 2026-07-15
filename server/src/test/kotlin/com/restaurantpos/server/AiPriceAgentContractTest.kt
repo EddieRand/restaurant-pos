@@ -27,6 +27,7 @@ class AiPriceAgentContractTest {
             changes = listOf(
                 AiPriceChangeDto("item-1", "宫保鸡丁", 3_800, 4_300, 500, 1_316),
             ),
+            warnings = emptyList(),
         )
 
         val encoded = json.encodeToString(proposal)
@@ -35,6 +36,7 @@ class AiPriceAgentContractTest {
         assertEquals(4_300L, decoded.changes.single().newPriceMinorUnit)
         assertEquals(1_316L, decoded.changes.single().deltaPercentBasisPoints)
         assertTrue(decoded.requiresConfirmation)
+        assertTrue(encoded.contains("\"warnings\":[]"))
     }
 
     @Test

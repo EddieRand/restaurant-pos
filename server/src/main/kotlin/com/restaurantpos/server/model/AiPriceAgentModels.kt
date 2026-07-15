@@ -37,7 +37,7 @@ data class AiPriceProposalResponse(
     val currencyCode: String,
     val minorUnitDigits: Int,
     val changes: List<AiPriceChangeDto>,
-    val warnings: List<AiPriceProposalWarningDto> = emptyList(),
+    val warnings: List<AiPriceProposalWarningDto>,
 )
 
 @Serializable
@@ -59,5 +59,5 @@ data class ExecuteAiPriceProposalResponse(
 data class AiAgentErrorResponse(
     val code: String,
     val message: String,
-    val retryable: Boolean = false,
+    val retryable: Boolean,
 )

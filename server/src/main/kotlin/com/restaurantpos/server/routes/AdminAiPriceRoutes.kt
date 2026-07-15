@@ -27,7 +27,7 @@ fun Route.adminAiPriceRoutes(service: AiPriceAgentService) {
         route("/admin/ai/price-proposals") {
             post {
                 if (!call.hasPermission("menu.edit")) {
-                    call.respond(HttpStatusCode.Forbidden, AiAgentErrorResponse("AI_PERMISSION_DENIED", "menu.edit permission is required"))
+                    call.respond(HttpStatusCode.Forbidden, AiAgentErrorResponse("AI_PERMISSION_DENIED", "menu.edit permission is required", false))
                     return@post
                 }
                 call.respondAgentErrors {
@@ -37,7 +37,7 @@ fun Route.adminAiPriceRoutes(service: AiPriceAgentService) {
             }
             post("/{proposalId}/execute") {
                 if (!call.hasPermission("menu.edit")) {
-                    call.respond(HttpStatusCode.Forbidden, AiAgentErrorResponse("AI_PERMISSION_DENIED", "menu.edit permission is required"))
+                    call.respond(HttpStatusCode.Forbidden, AiAgentErrorResponse("AI_PERMISSION_DENIED", "menu.edit permission is required", false))
                     return@post
                 }
                 call.respondAgentErrors {
@@ -68,7 +68,7 @@ private suspend fun io.ktor.server.application.ApplicationCall.respondAgentError
         }
         respond(status, AiAgentErrorResponse(e.code, e.message, e.retryable))
     } catch (_: AiNotConfiguredException) {
-        respond(HttpStatusCode.ServiceUnavailable, AiAgentErrorResponse("AI_NOT_CONFIGURED", "DeepSeek API is not configured"))
+        respond(HttpStatusCode.ServiceUnavailable, AiAgentErrorResponse("AI_NOT_CONFIGURED", "DeepSeek API is not configured", false))
     } catch (e: AiProviderException) {
         val status = when (e.code) {
             "AI_QUOTA_EXCEEDED" -> HttpStatusCode.PaymentRequired
@@ -80,10 +80,10 @@ private suspend fun io.ktor.server.application.ApplicationCall.respondAgentError
     } catch (_: TimeoutCancellationException) {
         respond(HttpStatusCode.GatewayTimeout, AiAgentErrorResponse("AI_TIMEOUT", "AI request timed out", true))
     } catch (_: BadRequestException) {
-        respond(HttpStatusCode.BadRequest, AiAgentErrorResponse("AI_INVALID_REQUEST", "Request body is invalid"))
+        respond(HttpStatusCode.BadRequest, AiAgentErrorResponse("AI_INVALID_REQUEST", "Request body is invalid", false))
     } catch (_: ContentTransformationException) {
-        respond(HttpStatusCode.BadRequest, AiAgentErrorResponse("AI_INVALID_REQUEST", "Request body is invalid"))
+        respond(HttpStatusCode.BadRequest, AiAgentErrorResponse("AI_INVALID_REQUEST", "Request body is invalid", false))
     } catch (_: IllegalArgumentException) {
-        respond(HttpStatusCode.BadRequest, AiAgentErrorResponse("AI_INVALID_REQUEST", "Request body is invalid"))
+        respond(HttpStatusCode.BadRequest, AiAgentErrorResponse("AI_INVALID_REQUEST", "Request body is invalid", false))
     }
 }

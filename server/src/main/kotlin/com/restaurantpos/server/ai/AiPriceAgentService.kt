@@ -106,6 +106,7 @@ class AiPriceAgentService(
             currencyCode = currency.code,
             minorUnitDigits = currency.minorDigits,
             changes = listOf(target.toChange(newPrice, delta, deltaBasisPoints)),
+            warnings = emptyList(),
         )
     }
 

@@ -89,7 +89,7 @@ fun Application.configureAuth() {
             }
             challenge { _, _ ->
                 if (call.request.uri.startsWith("/admin/ai/price-proposals")) {
-                    call.respond(HttpStatusCode.Unauthorized, AiAgentErrorResponse("AI_UNAUTHORIZED", "Missing or invalid token"))
+                    call.respond(HttpStatusCode.Unauthorized, AiAgentErrorResponse("AI_UNAUTHORIZED", "Missing or invalid token", false))
                 } else {
                     call.respond(HttpStatusCode.Unauthorized, ErrorResponse("Missing or invalid token"))
                 }
