@@ -1,8 +1,15 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useTranslation } from 'react-i18next'
+import { aiWorkspaceCopy } from '../i18n/aiWorkspace'
+import { useState } from 'react'
 
 const NAV_ICONS = {
+  ai: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+      <path d="M10 1.75a.75.75 0 01.72.54l.68 2.4a5.1 5.1 0 003.5 3.5l2.4.68a.75.75 0 010 1.44l-2.4.68a5.1 5.1 0 00-3.5 3.5l-.68 2.4a.75.75 0 01-1.44 0l-.68-2.4a5.1 5.1 0 00-3.5-3.5l-2.4-.68a.75.75 0 010-1.44l2.4-.68a5.1 5.1 0 003.5-3.5l.68-2.4a.75.75 0 01.72-.54z" />
+    </svg>
+  ),
   dashboard: (
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
       <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
@@ -96,6 +103,7 @@ const NAV_ICONS = {
 
 const NAV_ROUTES = [
   { to: '/',        end: true,  key: 'dashboard' as const },
+  { to: '/ai',                   key: 'ai'        as const },
   { to: '/menu',                 key: 'menu'      as const },
   { to: '/tables',               key: 'tables'    as const },
   { to: '/kitchen',             key: 'kitchen'   as const },
@@ -115,7 +123,9 @@ const NAV_ROUTES = [
 export default function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const { t } = useTranslation()
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   function handleLogout() {
     logout()
@@ -123,8 +133,33 @@ export default function Layout() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <aside className="w-48 rtl:w-56 flex-shrink-0 bg-white border-e border-gray-100 flex flex-col">
+    <div className="flex h-screen flex-col bg-gray-50 md:flex-row">
+      <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-100 bg-white px-3 md:hidden">
+        <div className="flex min-w-0 items-center gap-2">
+          <button type="button" onClick={() => setMobileNavOpen(true)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-500" aria-label={aiWorkspaceCopy.openNavigation}>☰</button>
+          <NavLink to="/" className="flex min-w-0 items-center gap-2">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-xs font-bold text-white">R</span>
+          <span className="truncate text-sm font-semibold text-gray-900">{t('nav.brandTitle')}</span>
+          </NavLink>
+        </div>
+        <NavLink to="/ai" state={{ fromRoute: location.pathname }} className="flex items-center gap-1.5 rounded-lg bg-brand-50 px-3 py-2 text-xs font-semibold text-brand-600">
+          {NAV_ICONS.ai}<span>{aiWorkspaceCopy.quickEntry}</span>
+        </NavLink>
+      </header>
+      {mobileNavOpen && (
+        <div className="fixed inset-0 z-50 bg-black/30 md:hidden" onClick={() => setMobileNavOpen(false)}>
+          <aside className="flex h-full w-[min(300px,86vw)] flex-col bg-white shadow-xl" onClick={event => event.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-gray-100 px-4 py-4">
+              <div><p className="text-sm font-semibold text-gray-900">{t('nav.brandTitle')}</p><p className="text-[10px] text-gray-400">{aiWorkspaceCopy.navigation}</p></div>
+              <button type="button" className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100" onClick={() => setMobileNavOpen(false)} aria-label={aiWorkspaceCopy.close}>×</button>
+            </div>
+            <div className="p-3"><NavLink to="/ai" state={{ fromRoute: location.pathname }} onClick={() => setMobileNavOpen(false)} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-500 to-orange-500 px-3 py-3 text-sm font-semibold text-white">{NAV_ICONS.ai}<span>{aiWorkspaceCopy.quickEntry}</span><span className="ms-auto text-white/70">→</span></NavLink></div>
+            <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">{NAV_ROUTES.map(({ to, end, key }) => <NavLink key={to} to={to} end={end} state={key === 'ai' ? { fromRoute: location.pathname } : undefined} onClick={() => setMobileNavOpen(false)} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>{NAV_ICONS[key]}<span className="text-sm">{key === 'ai' ? aiWorkspaceCopy.nav : t(`nav.${key}`)}</span></NavLink>)}</nav>
+            <div className="border-t border-gray-100 p-3"><button type="button" className="btn-secondary w-full" onClick={handleLogout}>{t('common.logout')}</button></div>
+          </aside>
+        </div>
+      )}
+      <aside className="hidden w-48 rtl:w-56 flex-shrink-0 flex-col border-e border-gray-100 bg-white md:flex">
         {/* Brand */}
         <div className="flex items-center gap-2.5 px-4 py-4 border-b border-gray-100">
           <div className="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center flex-shrink-0">
@@ -140,6 +175,12 @@ export default function Layout() {
           </div>
         </div>
 
+        <div className="px-2 pt-3">
+          <NavLink to="/ai" state={{ fromRoute: location.pathname }} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-500 to-orange-500 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:from-brand-600 hover:to-orange-600">
+            {NAV_ICONS.ai}<span>{aiWorkspaceCopy.quickEntry}</span><span className="ms-auto text-white/70">→</span>
+          </NavLink>
+        </div>
+
         {/* Nav */}
         <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
           {NAV_ROUTES.map(({ to, end, key }) => (
@@ -147,10 +188,11 @@ export default function Layout() {
               key={to}
               to={to}
               end={end}
+              state={key === 'ai' ? { fromRoute: location.pathname } : undefined}
               className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
             >
               {NAV_ICONS[key]}
-              <span className="text-sm">{t(`nav.${key}`)}</span>
+              <span className="text-sm">{key === 'ai' ? aiWorkspaceCopy.nav : t(`nav.${key}`)}</span>
             </NavLink>
           ))}
         </nav>
@@ -180,7 +222,7 @@ export default function Layout() {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto">
+      <main className="min-h-0 flex-1 overflow-auto">
         <Outlet />
       </main>
     </div>
