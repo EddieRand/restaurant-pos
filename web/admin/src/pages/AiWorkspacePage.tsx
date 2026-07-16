@@ -6,6 +6,10 @@ import {
   streamAiWorkspaceRun,
   type AiPriceExecution,
   type AiPriceProposal,
+  type AiGrowthBriefing,
+  type AiGrowthEditableParams,
+  type AiGrowthExecution,
+  type AiGrowthProposal,
   type AiWorkspaceEvent,
   type AiWorkspaceClarificationOption,
   type AiWorkspaceExpert,
@@ -16,6 +20,7 @@ import {
 } from '../api/aiWorkspace'
 import AiWorkspaceRunPanel from '../components/AiWorkspaceResults'
 import { aiWorkspaceCopy as copy, workspaceErrorMessage } from '../i18n/aiWorkspace'
+import { AiGrowthBriefingCard } from '../components/AiGrowthCards'
 
 type StreamState = 'live' | 'reconnecting' | 'complete'
 
@@ -31,7 +36,7 @@ function upsertStep(steps: AiWorkspaceStep[], step: AiWorkspaceStep) {
 function ExpertSelector({ value, onChange, compact = false }: { value: AiWorkspaceExpert; onChange: (value: AiWorkspaceExpert) => void; compact?: boolean }) {
   return (
     <div className="overflow-x-auto pb-1">
-      <div className={`flex min-w-max gap-2 ${compact ? '' : 'lg:grid lg:min-w-0 lg:grid-cols-4'}`}>
+      <div className={`flex min-w-max gap-2 ${compact ? '' : 'lg:grid lg:min-w-0 lg:grid-cols-5'}`}>
         {(Object.keys(copy.experts) as AiWorkspaceExpert[]).map(expert => {
           const item = copy.experts[expert]
           const selected = value === expert
@@ -78,6 +83,13 @@ export default function AiWorkspacePage() {
   const [executionByStep, setExecutionByStep] = useState<Record<string, AiPriceExecution>>({})
   const [executingStepId, setExecutingStepId] = useState<string | null>(null)
   const [executeErrorByStep, setExecuteErrorByStep] = useState<Record<string, { code: string; message: string; retryable: boolean }>>({})
+  const [growthBriefing, setGrowthBriefing] = useState<AiGrowthBriefing | null>(null)
+  const [growthBriefingLoading, setGrowthBriefingLoading] = useState(false)
+  const [growthBriefingError, setGrowthBriefingError] = useState<string | null>(null)
+  const [growthProposalByStep, setGrowthProposalByStep] = useState<Record<string, AiGrowthProposal>>({})
+  const [growthExecutionByStep, setGrowthExecutionByStep] = useState<Record<string, AiGrowthExecution>>({})
+  const [growthBusyStepId, setGrowthBusyStepId] = useState<string | null>(null)
+  const [growthErrorByStep, setGrowthErrorByStep] = useState<Record<string, { code: string; message: string; retryable: boolean; operation: 'revise' | 'execute' }>>({})
 
   const abortRef = useRef<AbortController | null>(null)
   const activeSessionIdRef = useRef<string | null>(null)
@@ -89,6 +101,25 @@ export default function AiWorkspacePage() {
   useEffect(() => { activeSessionIdRef.current = activeSession?.sessionId ?? null }, [activeSession?.sessionId])
   useEffect(() => () => abortRef.current?.abort(), [])
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }) }, [activeSession?.messages.length, liveRun?.steps.length])
+
+  async function loadGrowthBriefing() {
+    setGrowthBriefingLoading(true)
+    setGrowthBriefingError(null)
+    try {
+      setGrowthBriefing(await aiWorkspaceApi.getTodayGrowthBriefing())
+    } catch (briefingError) {
+      const code = aiWorkspaceErrorCode(briefingError)
+      setGrowthBriefingError(workspaceErrorMessage(code, briefingError instanceof Error ? briefingError.message : copy.growth.unavailable))
+    } finally {
+      setGrowthBriefingLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (expert === 'GROWTH' && !growthBriefing && !growthBriefingLoading) void loadGrowthBriefing()
+    // Loading is intentionally triggered only when the Growth expert becomes active.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expert])
 
   async function refreshSessions() {
     const list = await aiWorkspaceApi.listSessions()
@@ -286,6 +317,49 @@ export default function AiWorkspacePage() {
     }
   }
 
+  function clearGrowthError(stepId: string) {
+    setGrowthErrorByStep(current => {
+      if (!current[stepId]) return current
+      const next = { ...current }; delete next[stepId]; return next
+    })
+  }
+
+  async function reviseGrowth(step: AiWorkspaceStep, proposal: AiGrowthProposal, params: AiGrowthEditableParams) {
+    setGrowthBusyStepId(step.stepId)
+    clearGrowthError(step.stepId)
+    try {
+      const revised = await aiWorkspaceApi.reviseGrowthProposal(proposal.proposalId, params)
+      setGrowthProposalByStep(current => ({ ...current, [step.stepId]: revised }))
+    } catch (reviseError) {
+      const code = aiWorkspaceErrorCode(reviseError) ?? 'GROWTH_INVALID_PARAMS'
+      const retryable = code === 'AI_RATE_LIMITED' || code === 'AI_PROVIDER_UNAVAILABLE' || code === 'AI_TIMEOUT'
+      setGrowthErrorByStep(current => ({ ...current, [step.stepId]: {
+        code, message: workspaceErrorMessage(code, reviseError instanceof Error ? reviseError.message : undefined), retryable, operation: 'revise',
+      } }))
+    } finally {
+      setGrowthBusyStepId(null)
+    }
+  }
+
+  async function executeGrowth(step: AiWorkspaceStep, proposal: AiGrowthProposal) {
+    setGrowthBusyStepId(step.stepId)
+    clearGrowthError(step.stepId)
+    try {
+      const execution = await aiWorkspaceApi.executeGrowthProposal(proposal.proposalId, proposal.proposalId)
+      setGrowthExecutionByStep(current => ({ ...current, [step.stepId]: execution }))
+      if (activeSession) await refreshSession(activeSession.sessionId)
+    } catch (executeError) {
+      const code = aiWorkspaceErrorCode(executeError) ?? 'GROWTH_INVALID_PARAMS'
+      const retryable = code === 'AI_RATE_LIMITED' || code === 'AI_PROVIDER_UNAVAILABLE' || code === 'AI_TIMEOUT'
+      setGrowthErrorByStep(current => ({ ...current, [step.stepId]: {
+        code, message: workspaceErrorMessage(code, executeError instanceof Error ? executeError.message : undefined), retryable, operation: 'execute',
+      } }))
+      if (code === 'GROWTH_ALREADY_EXECUTED' && activeSession) await refreshSession(activeSession.sessionId).catch(() => undefined)
+    } finally {
+      setGrowthBusyStepId(null)
+    }
+  }
+
   const runsByMessage = useMemo(() => {
     const result = new Map<string, AiWorkspaceRun[]>()
     for (const run of activeSession?.runs ?? []) result.set(run.messageId, [...(result.get(run.messageId) ?? []), run])
@@ -308,6 +382,8 @@ export default function AiWorkspacePage() {
           <div className="mx-auto flex min-h-full max-w-5xl flex-col px-3 py-4 sm:px-6 sm:py-6">
             <section className="mb-5"><div className="mb-2"><p className="text-sm font-semibold text-gray-900">{copy.expertLabel}</p><p className="hidden text-xs text-gray-400 sm:block">{copy.expertDescription}</p></div><ExpertSelector value={expert} onChange={setExpert} /></section>
 
+            {expert === 'GROWTH' && <AiGrowthBriefingCard briefing={growthBriefing} loading={growthBriefingLoading} error={growthBriefingError} onRefresh={() => { void loadGrowthBriefing() }} />}
+
             {error && <div role="alert" className="mb-4 flex items-start justify-between gap-3 rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-700"><span>{error}</span><button type="button" className="shrink-0 font-semibold underline" onClick={() => setError(null)}>{copy.close}</button></div>}
 
             <section className="min-h-[260px] flex-1">
@@ -316,7 +392,7 @@ export default function AiWorkspacePage() {
               {!loadingSession && activeSession && activeSession.messages.length > 0 && <div className="space-y-5">{activeSession.messages.map((item, messageIndex) => {
                 const user = item.role.toLowerCase() === 'user'
                 const messageRuns = runsByMessage.get(item.messageId) ?? []
-                return <div key={item.messageId} className={user ? 'ml-auto max-w-3xl' : 'mr-auto max-w-3xl'}><div className={`mb-1 text-[11px] text-gray-400 ${user ? 'text-right' : ''}`}>{user ? copy.user : copy.assistant} · {new Date(item.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</div><div className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-6 ${user ? 'rounded-tr-sm bg-brand-500 text-white' : 'rounded-tl-sm border border-gray-200 bg-white text-gray-700'}`}>{item.content}</div>{messageRuns.map(run => { const renderedRun = liveRun?.runId === run.runId ? liveRun : run; const clarificationAnswered = activeSession.messages.slice(messageIndex + 1).some(later => later.content.includes(`原始请求：${item.content}`) && later.content.includes('补充确认：')); return <AiWorkspaceRunPanel key={run.runId} run={renderedRun} streamState={liveRun?.runId === run.runId ? streamState : isRunTerminal(run.status) ? 'complete' : undefined} executionByStep={executionByStep} executingStepId={executingStepId} executeErrorByStep={executeErrorByStep} onExecute={executePrice} onClarify={answerClarification} clarifying={sending} clarificationAnswered={clarificationAnswered} /> })}</div>
+                return <div key={item.messageId} className={user ? 'ml-auto max-w-3xl' : 'mr-auto max-w-3xl'}><div className={`mb-1 text-[11px] text-gray-400 ${user ? 'text-right' : ''}`}>{user ? copy.user : copy.assistant} · {new Date(item.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</div><div className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-6 ${user ? 'rounded-tr-sm bg-brand-500 text-white' : 'rounded-tl-sm border border-gray-200 bg-white text-gray-700'}`}>{item.content}</div>{messageRuns.map(run => { const renderedRun = liveRun?.runId === run.runId ? liveRun : run; const clarificationAnswered = activeSession.messages.slice(messageIndex + 1).some(later => later.content.includes(`原始请求：${item.content}`) && later.content.includes('补充确认：')); return <AiWorkspaceRunPanel key={run.runId} run={renderedRun} streamState={liveRun?.runId === run.runId ? streamState : isRunTerminal(run.status) ? 'complete' : undefined} executionByStep={executionByStep} executingStepId={executingStepId} executeErrorByStep={executeErrorByStep} growthProposalByStep={growthProposalByStep} growthExecutionByStep={growthExecutionByStep} growthBusyStepId={growthBusyStepId} growthErrorByStep={growthErrorByStep} onExecute={executePrice} onReviseGrowth={reviseGrowth} onExecuteGrowth={executeGrowth} onClarify={answerClarification} clarifying={sending} clarificationAnswered={clarificationAnswered} /> })}</div>
               })}<div ref={messagesEndRef} /></div>}
             </section>
           </div>
