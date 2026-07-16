@@ -45,11 +45,19 @@ class AiGrowthRoutesTest {
         }.body<LoginResponse>().token
         fun HttpRequestBuilder.auth() { header(HttpHeaders.Authorization, "Bearer $token") }
 
+        val cashierToken = JwtConfig.issueToken("cashier-test", "cashier")
+        val forbidden = c.get("/admin/ai/growth/briefings/today") {
+            header(HttpHeaders.Authorization, "Bearer $cashierToken")
+        }
+        assertEquals(HttpStatusCode.Forbidden, forbidden.status)
+        assertEquals(AiGrowthErrorCodes.PERMISSION_DENIED, forbidden.body<AiGrowthErrorResponse>().code)
+
         val first = c.get("/admin/ai/growth/briefings/today") { auth() }.body<AiGrowthBriefingResponse>()
         val second = c.get("/admin/ai/growth/briefings/today") { auth() }.body<AiGrowthBriefingResponse>()
         assertEquals(first.briefingId, second.briefingId)
         assertEquals(1, generations)
         assertTrue(first.evidence.any { it.dataMode == AiGrowthDataMode.DEMO_SIGNAL })
+        assertEquals("演示信号，不代表抖音官方数据", first.demoSignalNotice)
 
         val proposal = c.post("/admin/ai/growth/proposals") {
             auth(); contentType(ContentType.Application.Json)

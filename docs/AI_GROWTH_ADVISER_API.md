@@ -16,6 +16,7 @@ restriction, not an elevated identity. It can route only to
 
 ```text
 GET  /admin/ai/growth/briefings/today
+POST /admin/ai/growth/proposals
 POST /admin/ai/growth/proposals/{proposalId}/revise
 POST /admin/ai/growth/proposals/{proposalId}/execute
 ```

@@ -45,7 +45,7 @@ data class AiGrowthBriefingResponse(
     val evidence: List<AiGrowthEvidenceDto>,
     val suggestions: List<String>,
     val contentDraft: String? = null,
-    val demoSignalNotice: String = "演示信号，不代表抖音官方数据",
+    val demoSignalNotice: String,
 )
 
 @Serializable

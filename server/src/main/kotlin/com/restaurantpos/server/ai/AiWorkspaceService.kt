@@ -224,6 +224,26 @@ class AiWorkspaceService(
         }
     }
 
+    fun markGrowthProposalRevised(actorId: String, oldProposalId: String, response: AiGrowthProposalResponse) {
+        transaction {
+            val stepRow = AiWorkspaceRunStepsTable.selectAll()
+                .where { AiWorkspaceRunStepsTable.proposalId eq oldProposalId }
+                .firstOrNull() ?: return@transaction
+            val runId = stepRow[AiWorkspaceRunStepsTable.runId]
+            ownedRun(actorId, runId)
+            val prior = stepRow[AiWorkspaceRunStepsTable.resultJson]
+                ?.let { json.decodeFromString<AiWorkspaceStepResultDto>(it) }
+                ?: AiWorkspaceStepResultDto()
+            val result = prior.copy(growthProposal = response, growthExecution = null)
+            AiWorkspaceRunStepsTable.update({ AiWorkspaceRunStepsTable.id eq stepRow[AiWorkspaceRunStepsTable.id] }) {
+                it[status] = AiWorkspaceStepStatus.AWAITING_CONFIRMATION.name
+                it[proposalId] = response.proposalId
+                it[resultJson] = json.encodeToString(result)
+            }
+            appendEvent(runId, "step.awaiting_confirmation", loadStep(stepRow[AiWorkspaceRunStepsTable.id]))
+        }
+    }
+
     private suspend fun processRun(
         actorId: String,
         runId: String,
@@ -302,7 +322,7 @@ class AiWorkspaceService(
                         )
                         AiWorkspaceTools.CRM_COUPON_CAMPAIGN_PROPOSAL -> AiWorkspaceStepResultDto(
                             growthProposal = requireToolPermission(actorId, AiGrowthPermissions.CAMPAIGN_MANAGE).let {
-                                requireGrowthService().createProposal(actorId, growthProposalRequest(planned.instruction))
+                                requireGrowthService().createProposal(actorId, growthProposalRequest(request.message))
                             },
                         )
                         else -> throw AiWorkspaceException("AI_UNSUPPORTED_INTENT", "工具不受支持")
@@ -333,7 +353,7 @@ class AiWorkspaceService(
     ): AiWorkspaceClarification? {
         val clarification = plan.clarification
             ?: missingPeriodClarification(plan, request)
-            ?: missingGrowthClarification(plan)
+            ?: missingGrowthClarification(plan, request.message)
         if (clarification != null) {
             require(clarification.question.trim().length in 1..256) { "clarification question is invalid" }
             require(clarification.options.size in 2..4) { "clarification must contain 2 to 4 options" }
@@ -382,9 +402,12 @@ class AiWorkspaceService(
         )
     }
 
-    private fun missingGrowthClarification(plan: AiWorkspacePlan): AiWorkspaceClarification? {
-        val instruction = plan.steps.firstOrNull { it.tool == AiWorkspaceTools.CRM_COUPON_CAMPAIGN_PROPOSAL }?.instruction ?: return null
-        if (!Regex("(\\d{1,4})\\s*元").containsMatchIn(instruction)) {
+    private fun missingGrowthClarification(plan: AiWorkspacePlan, userMessage: String): AiWorkspaceClarification? {
+        if (plan.steps.none { it.tool == AiWorkspaceTools.CRM_COUPON_CAMPAIGN_PROPOSAL }) return null
+        // Only trust values explicitly supplied by the operator. A planner may fill in
+        // plausible defaults in its normalized instruction; treating those as confirmed
+        // would silently skip the required amount/duration/audience confirmations.
+        if (!Regex("(\\d{1,4})\\s*元").containsMatchIn(userMessage)) {
             return AiWorkspaceClarification(
                 "你希望固定优惠多少钱？",
                 listOf(
@@ -394,7 +417,7 @@ class AiWorkspaceService(
                 ),
             )
         }
-        if (!Regex("(\\d{1,2})\\s*天").containsMatchIn(instruction)) {
+        if (explicitGrowthValidDays(userMessage) == null) {
             return AiWorkspaceClarification(
                 "优惠券有效期多久？",
                 listOf(
@@ -404,8 +427,9 @@ class AiWorkspaceService(
                 ),
             )
         }
+        val normalizedMessage = userMessage.replace(" ", "")
         val hasSegment = listOf("全部顾客", "所有顾客", "全量顾客", "30天未到店", "三十天未到店", "沉睡", "流失", "高价值", "高消费", "VIP")
-            .any(instruction::contains)
+            .any(normalizedMessage::contains)
         if (!hasSegment) {
             return AiWorkspaceClarification(
                 "这次活动面向哪类顾客？",
@@ -451,18 +475,40 @@ class AiWorkspaceService(
     private fun requireGrowthService(): AiGrowthService = growthService
         ?: throw AiWorkspaceException("AI_GROWTH_NOT_CONFIGURED", "增长参谋服务未配置")
 
-    private fun growthProposalRequest(instruction: String): CreateAiGrowthProposalRequest {
-        val amountYuan = Regex("(\\d{1,4})\\s*元").find(instruction)?.groupValues?.get(1)?.toLongOrNull()
+    private fun growthProposalRequest(userMessage: String): CreateAiGrowthProposalRequest {
+        val amountYuan = Regex("(\\d{1,4})\\s*元").findAll(userMessage).lastOrNull()?.groupValues?.get(1)?.toLongOrNull()
             ?: throw AiWorkspaceException("AI_NEEDS_CLARIFICATION", "请明确固定优惠金额")
-        val validDays = Regex("(\\d{1,2})\\s*天").find(instruction)?.groupValues?.get(1)?.toIntOrNull()
+        val validDays = explicitGrowthValidDays(userMessage)
             ?: throw AiWorkspaceException("AI_NEEDS_CLARIFICATION", "请明确有效天数")
-        val segment = when {
-            listOf("30天未到店", "三十天未到店", "沉睡", "流失").any(instruction::contains) -> "INACTIVE_30_DAYS"
-            listOf("高价值", "高消费", "VIP").any(instruction::contains) -> "HIGH_VALUE"
-            listOf("全部顾客", "所有顾客", "全量顾客").any(instruction::contains) -> "ALL"
-            else -> throw AiWorkspaceException("AI_NEEDS_CLARIFICATION", "请选择目标客群")
-        }
+        val normalizedMessage = userMessage.replace(" ", "")
+        val segment = listOf(
+            "INACTIVE_30_DAYS" to listOf("30天未到店", "三十天未到店", "沉睡", "流失"),
+            "HIGH_VALUE" to listOf("高价值", "高消费", "VIP"),
+            "ALL" to listOf("全部顾客", "所有顾客", "全量顾客"),
+        ).flatMap { (value, phrases) -> phrases.map { phrase -> value to normalizedMessage.lastIndexOf(phrase) } }
+            .filter { it.second >= 0 }
+            .maxByOrNull { it.second }
+            ?.first
+            ?: throw AiWorkspaceException("AI_NEEDS_CLARIFICATION", "请选择目标客群")
         return CreateAiGrowthProposalRequest(amountYuan * 100, validDays, segment)
+    }
+
+    private fun explicitGrowthValidDays(userMessage: String): Int? {
+        // Prefer a labelled duration and never interpret audience recency such as
+        // “30 天未到店顾客” as the coupon's validity period.
+        val labelled = Regex("有效期[：:]?\\s*(\\d{1,2})\\s*天")
+            .findAll(userMessage)
+            .lastOrNull()
+            ?.groupValues
+            ?.get(1)
+            ?.toIntOrNull()
+        if (labelled != null) return labelled
+        return Regex("(\\d{1,2})\\s*天(?!\\s*未到店)")
+            .findAll(userMessage)
+            .lastOrNull()
+            ?.groupValues
+            ?.get(1)
+            ?.toIntOrNull()
     }
 
     private fun resolvePeriod(message: String, context: AiWorkspaceContextDto): Pair<Long, Long> {
