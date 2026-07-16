@@ -68,6 +68,11 @@ const NAV_ICONS = {
       <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
     </svg>
   ),
+  vouchers: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+      <path d="M3 4a2 2 0 012-2h10a2 2 0 012 2v3a2 2 0 000 4v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a2 2 0 000-4V4zm6 1a1 1 0 102 0 1 1 0 00-2 0zm0 4a1 1 0 102 0 1 1 0 00-2 0zm0 4a1 1 0 102 0 1 1 0 00-2 0z" />
+    </svg>
+  ),
   users: (
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
       <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
@@ -116,6 +121,7 @@ const NAV_ROUTES = [
   { to: '/crm',                 key: 'crm'       as const },
   { to: '/reports',              key: 'reports'   as const },
   { to: '/orders',               key: 'orders'    as const },
+  { to: '/group-buying',         key: 'vouchers'  as const },
   { to: '/users',                key: 'users'     as const },
   { to: '/settings',             key: 'settings'  as const },
 ]
@@ -154,7 +160,7 @@ export default function Layout() {
               <button type="button" className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100" onClick={() => setMobileNavOpen(false)} aria-label={aiWorkspaceCopy.close}>×</button>
             </div>
             <div className="p-3"><NavLink to="/ai" state={{ fromRoute: location.pathname }} onClick={() => setMobileNavOpen(false)} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-500 to-orange-500 px-3 py-3 text-sm font-semibold text-white">{NAV_ICONS.ai}<span>{aiWorkspaceCopy.quickEntry}</span><span className="ms-auto text-white/70">→</span></NavLink></div>
-            <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">{NAV_ROUTES.map(({ to, end, key }) => <NavLink key={to} to={to} end={end} state={key === 'ai' ? { fromRoute: location.pathname } : undefined} onClick={() => setMobileNavOpen(false)} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>{NAV_ICONS[key]}<span className="text-sm">{key === 'ai' ? aiWorkspaceCopy.nav : t(`nav.${key}`)}</span></NavLink>)}</nav>
+            <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">{NAV_ROUTES.map(({ to, end, key }) => <NavLink key={to} to={to} end={end} state={key === 'ai' ? { fromRoute: location.pathname } : undefined} onClick={() => setMobileNavOpen(false)} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>{NAV_ICONS[key]}<span className="text-sm">{key === 'ai' ? aiWorkspaceCopy.nav : key === 'vouchers' ? '团购核销' : t(`nav.${key}`)}</span></NavLink>)}</nav>
             <div className="border-t border-gray-100 p-3"><button type="button" className="btn-secondary w-full" onClick={handleLogout}>{t('common.logout')}</button></div>
           </aside>
         </div>
@@ -192,7 +198,7 @@ export default function Layout() {
               className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
             >
               {NAV_ICONS[key]}
-              <span className="text-sm">{key === 'ai' ? aiWorkspaceCopy.nav : t(`nav.${key}`)}</span>
+              <span className="text-sm">{key === 'ai' ? aiWorkspaceCopy.nav : key === 'vouchers' ? '团购核销' : t(`nav.${key}`)}</span>
             </NavLink>
           ))}
         </nav>

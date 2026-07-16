@@ -37,6 +37,16 @@
     <string name="checkout_gift_card_hint">输入卡号…</string>
     <string name="checkout_gift_card_pay">礼品卡支付</string>
     <string name="checkout_gift_card_offline_hint">需要网络连接</string>
+    <string name="checkout_group_buying_title">抖音 / 美团团购券</string>
+    <string name="checkout_group_buying_douyin">抖音团购</string>
+    <string name="checkout_group_buying_meituan">美团团购</string>
+    <string name="checkout_group_buying_code">团购券码</string>
+    <string name="checkout_group_buying_hint">扫码或输入券码…</string>
+    <string name="checkout_group_buying_validate">验券</string>
+    <string name="checkout_group_buying_verified">券码 %1$s · 可抵扣 %2$s</string>
+    <string name="checkout_group_buying_demo_badge">Demo 测试券（未连接平台生产环境）</string>
+    <string name="checkout_group_buying_confirm">确认核销 %1$s</string>
+    <string name="checkout_group_buying_offline">团购券验券与核销需要网络连接</string>
     <string name="checkout_print_error">打印失败</string>
     <string name="checkout_ok">确定</string>
     <string name="checkout_reprint_receipt">重印小票</string>

@@ -1,9 +1,11 @@
 package com.restaurantpos.core.network.di
 
 import com.restaurantpos.core.domain.repository.GiftCardRepository
+import com.restaurantpos.core.domain.repository.GroupBuyingVoucherRepository
 import com.restaurantpos.core.domain.repository.TimeclockRepository
 import com.restaurantpos.core.network.BuildConfig
 import com.restaurantpos.core.network.HttpGiftCardApi
+import com.restaurantpos.core.network.HttpGroupBuyingVoucherApi
 import com.restaurantpos.core.network.HttpTimeclockApi
 import com.restaurantpos.core.network.HttpKitchenTicketPullPort
 import com.restaurantpos.core.network.HttpMenuPullPort
@@ -137,6 +139,17 @@ abstract class NetworkModule {
             client: OkHttpClient,
             tokenStore: TokenStore,
         ): GiftCardRepository = HttpGiftCardApi(
+            baseUrl = BuildConfig.SERVER_BASE_URL,
+            client = client,
+            authToken = { tokenStore.getToken() ?: "" },
+        )
+
+        @Provides
+        @Singleton
+        fun provideGroupBuyingVoucherRepository(
+            client: OkHttpClient,
+            tokenStore: TokenStore,
+        ): GroupBuyingVoucherRepository = HttpGroupBuyingVoucherApi(
             baseUrl = BuildConfig.SERVER_BASE_URL,
             client = client,
             authToken = { tokenStore.getToken() ?: "" },

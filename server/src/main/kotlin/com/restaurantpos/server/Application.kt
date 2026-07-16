@@ -138,6 +138,7 @@ fun Application.configureRouting(
         adminTimecardRoutes()
         adminScheduleRoutes()
         adminGiftCardRoutes()
+        groupBuyingVoucherRoutes()
         devSeedRoutes()
         get("/qr") { call.respondCustomerQrIndex() }
         get("/qr/") { call.respondCustomerQrIndex() }

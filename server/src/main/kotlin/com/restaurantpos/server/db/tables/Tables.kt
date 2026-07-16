@@ -305,6 +305,38 @@ object GiftCardTransactionsTable : Table("gift_card_transactions") {
     override val primaryKey = PrimaryKey(id)
 }
 
+/** Platform voucher catalogue used by the demo adapter. Raw voucher codes are never stored. */
+object GroupBuyingVouchersTable : Table("group_buying_vouchers") {
+    val id = varchar("id", 64)
+    val provider = varchar("provider", 16)
+    val codeHash = varchar("code_hash", 64)
+    val codeLast4 = varchar("code_last4", 4)
+    val title = varchar("title", 160)
+    val faceValueMinorUnit = long("face_value_minor_unit")
+    val expiresAt = long("expires_at")
+    val status = varchar("status", 24).default("AVAILABLE")
+    val demo = bool("demo").default(false)
+    val createdAt = long("created_at")
+    init { uniqueIndex(provider, codeHash) }
+    override val primaryKey = PrimaryKey(id)
+}
+
+object GroupBuyingRedemptionsTable : Table("group_buying_redemptions") {
+    val id = varchar("id", 64)
+    val provider = varchar("provider", 16)
+    val voucherId = varchar("voucher_id", 64).uniqueIndex()
+    val codeLast4 = varchar("code_last4", 4)
+    val orderId = varchar("order_id", 64).index()
+    val operatorId = varchar("operator_id", 64).default("")
+    val redeemedAmountMinorUnit = long("redeemed_amount_minor_unit")
+    val idempotencyKey = varchar("idempotency_key", 96).uniqueIndex()
+    val providerReference = varchar("provider_reference", 96)
+    val status = varchar("status", 24).default("SUCCEEDED")
+    val demo = bool("demo").default(false)
+    val createdAt = long("created_at")
+    override val primaryKey = PrimaryKey(id)
+}
+
 object CombosTable : Table("combos") {
     val id = varchar("id", 64)
     val names = text("names")                       // JSON map

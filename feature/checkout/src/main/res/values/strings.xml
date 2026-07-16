@@ -38,6 +38,16 @@
     <string name="checkout_gift_card_hint">Enter code…</string>
     <string name="checkout_gift_card_pay">Pay with Gift Card</string>
     <string name="checkout_gift_card_offline_hint">Requires network connection</string>
+    <string name="checkout_group_buying_title">Douyin / Meituan Vouchers</string>
+    <string name="checkout_group_buying_douyin">Douyin</string>
+    <string name="checkout_group_buying_meituan">Meituan</string>
+    <string name="checkout_group_buying_code">Voucher code</string>
+    <string name="checkout_group_buying_hint">Scan or enter code…</string>
+    <string name="checkout_group_buying_validate">Verify</string>
+    <string name="checkout_group_buying_verified">Code %1$s · Redeemable %2$s</string>
+    <string name="checkout_group_buying_demo_badge">Demo voucher (not connected to production)</string>
+    <string name="checkout_group_buying_confirm">Confirm redemption %1$s</string>
+    <string name="checkout_group_buying_offline">Voucher verification requires a network connection</string>
     <string name="checkout_print_error">Print Error</string>
     <string name="checkout_ok">OK</string>
     <string name="checkout_reprint_receipt">Reprint Receipt</string>

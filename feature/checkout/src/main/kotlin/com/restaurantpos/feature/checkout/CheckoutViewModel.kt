@@ -8,6 +8,7 @@ import com.restaurantpos.core.config.DefaultRegionConfig
 import com.restaurantpos.core.config.RegionConfig
 import com.restaurantpos.core.domain.repository.CustomerRepository
 import com.restaurantpos.core.domain.repository.GiftCardRepository
+import com.restaurantpos.core.domain.repository.GroupBuyingVoucherRepository
 import com.restaurantpos.core.domain.repository.OrderRepository
 import com.restaurantpos.core.domain.repository.PaymentRepository
 import com.restaurantpos.core.domain.repository.SessionRepository
@@ -69,6 +70,11 @@ data class CheckoutUiState(
     val earnPointsPreview: Long = 0L,
     // Gift card redemption
     val giftCardCode: String = "",
+    // Douyin / Meituan group-buying voucher redemption
+    val groupBuyingProvider: GroupBuyingVoucherRepository.Provider = GroupBuyingVoucherRepository.Provider.DOUYIN,
+    val groupBuyingCode: String = "",
+    val validatedGroupBuyingVoucher: GroupBuyingVoucherRepository.Voucher? = null,
+    val groupBuyingIdempotencyKey: String = "",
     val isOnline: Boolean = true,
 )
 
@@ -89,6 +95,7 @@ class CheckoutViewModel @Inject constructor(
     private val customerRepo: CustomerRepository,
     private val printReceiptUseCase: PrintReceiptUseCase,
     private val giftCardRepo: GiftCardRepository,
+    private val groupBuyingVoucherRepo: GroupBuyingVoucherRepository,
     private val networkMonitor: NetworkMonitor,
     private val cdsPhaseBroadcaster: CdsPhaseBroadcaster,
 ) : ViewModel() {
@@ -183,6 +190,9 @@ class CheckoutViewModel @Inject constructor(
                             alreadyPaidMinorUnit = alreadyPaid,
                             remainingMinorUnit = maxOf(0L, order.totalMinorUnit - alreadyPaid),
                             payments = payments,
+                            groupBuyingCode = if (method == PaymentMethod.VOUCHER) "" else it.groupBuyingCode,
+                            validatedGroupBuyingVoucher = if (method == PaymentMethod.VOUCHER) null else it.validatedGroupBuyingVoucher,
+                            groupBuyingIdempotencyKey = if (method == PaymentMethod.VOUCHER) "" else it.groupBuyingIdempotencyKey,
                         )
                     }
                     if (order.status == OrderStatus.CLOSED) {
@@ -201,6 +211,71 @@ class CheckoutViewModel @Inject constructor(
     }
 
     fun setGiftCardCode(code: String) = _uiState.update { it.copy(giftCardCode = code) }
+
+    fun setGroupBuyingProvider(provider: GroupBuyingVoucherRepository.Provider) = _uiState.update {
+        it.copy(
+            groupBuyingProvider = provider,
+            validatedGroupBuyingVoucher = null,
+            groupBuyingIdempotencyKey = "",
+            errorMessage = null,
+        )
+    }
+
+    fun setGroupBuyingCode(code: String) = _uiState.update {
+        it.copy(
+            groupBuyingCode = code.take(64),
+            validatedGroupBuyingVoucher = null,
+            groupBuyingIdempotencyKey = "",
+            errorMessage = null,
+        )
+    }
+
+    fun validateGroupBuyingVoucher() {
+        val state = _uiState.value
+        val code = state.groupBuyingCode.trim()
+        if (!state.isOnline || code.isBlank()) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            when (val result = groupBuyingVoucherRepo.validate(state.groupBuyingProvider, code)) {
+                is GroupBuyingVoucherRepository.ValidateResult.Error ->
+                    _uiState.update { it.copy(isLoading = false, errorMessage = result.message) }
+                is GroupBuyingVoucherRepository.ValidateResult.Success ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            validatedGroupBuyingVoucher = result.voucher,
+                            groupBuyingIdempotencyKey = UUID.randomUUID().toString(),
+                        )
+                    }
+            }
+        }
+    }
+
+    fun redeemGroupBuyingVoucher() {
+        val state = _uiState.value
+        val voucher = state.validatedGroupBuyingVoucher ?: return
+        val amount = minOf(voucher.faceValueMinorUnit, state.remainingMinorUnit)
+        if (!state.isOnline || amount <= 0 || state.groupBuyingIdempotencyKey.isBlank()) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            val operatorId = sessionRepo.current()?.id ?: configRepo.current().terminalId
+            when (val result = groupBuyingVoucherRepo.redeem(
+                provider = state.groupBuyingProvider,
+                code = state.groupBuyingCode.trim(),
+                orderId = orderId,
+                operatorId = operatorId,
+                requestedAmountMinorUnit = amount,
+                idempotencyKey = state.groupBuyingIdempotencyKey,
+            )) {
+                is GroupBuyingVoucherRepository.RedeemResult.Error ->
+                    _uiState.update { it.copy(isLoading = false, errorMessage = result.message) }
+                is GroupBuyingVoucherRepository.RedeemResult.Success -> {
+                    _uiState.update { it.copy(isLoading = false) }
+                    payWithMethod(PaymentMethod.VOUCHER, result.redeemedAmountMinorUnit)
+                }
+            }
+        }
+    }
 
     /** Redeems balance from a gift card (online, server-authoritative) then settles the payment. */
     fun payWithGiftCard(amountMinorUnit: Long? = null) {

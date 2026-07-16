@@ -7,6 +7,7 @@ import com.restaurantpos.core.config.RegionConfig
 import com.restaurantpos.core.domain.repository.CouponRepository
 import com.restaurantpos.core.domain.repository.CustomerRepository
 import com.restaurantpos.core.domain.repository.GiftCardRepository
+import com.restaurantpos.core.domain.repository.GroupBuyingVoucherRepository
 import com.restaurantpos.core.domain.repository.OrderRepository
 import com.restaurantpos.core.domain.repository.PaymentRepository
 import com.restaurantpos.core.domain.repository.RolePermissionRepository
@@ -162,6 +163,32 @@ class CheckoutViewModelTest {
         }
     }
 
+    private class FakeGroupBuyingVoucherRepo : GroupBuyingVoucherRepository {
+        var validateCalled = false
+        var redeemCalled = false
+        override suspend fun validate(
+            provider: GroupBuyingVoucherRepository.Provider,
+            code: String,
+        ): GroupBuyingVoucherRepository.ValidateResult {
+            validateCalled = true
+            return GroupBuyingVoucherRepository.ValidateResult.Success(
+                GroupBuyingVoucherRepository.Voucher(provider, "****1001", "测试团购券", 800L, Long.MAX_VALUE, "AVAILABLE", true)
+            )
+        }
+
+        override suspend fun redeem(
+            provider: GroupBuyingVoucherRepository.Provider,
+            code: String,
+            orderId: String,
+            operatorId: String,
+            requestedAmountMinorUnit: Long,
+            idempotencyKey: String,
+        ): GroupBuyingVoucherRepository.RedeemResult {
+            redeemCalled = true
+            return GroupBuyingVoucherRepository.RedeemResult.Success("redeem-1", requestedAmountMinorUnit, false)
+        }
+    }
+
     private class FakeNetworkMonitor(initial: Boolean) : NetworkMonitor {
         private val flow = MutableStateFlow(initial)
         override val isOnline: Flow<Boolean> = flow
@@ -172,6 +199,7 @@ class CheckoutViewModelTest {
         order: Order = baseOrder(),
         networkMonitor: FakeNetworkMonitor = FakeNetworkMonitor(true),
         giftCardRepo: FakeGiftCardRepo = FakeGiftCardRepo(),
+        groupBuyingVoucherRepo: FakeGroupBuyingVoucherRepo = FakeGroupBuyingVoucherRepo(),
     ): Triple<CheckoutViewModel, FakePaymentRepo, FakeGiftCardRepo> {
         val orderRepo = FakeOrderRepo(order)
         val paymentRepo = FakePaymentRepo()
@@ -195,6 +223,7 @@ class CheckoutViewModelTest {
             customerRepo = FakeCustomerRepo(),
             printReceiptUseCase = PrintReceiptUseCase(orderRepo, FakePrinterPort(), DefaultRegionConfig),
             giftCardRepo = giftCardRepo,
+            groupBuyingVoucherRepo = groupBuyingVoucherRepo,
             networkMonitor = networkMonitor,
             cdsPhaseBroadcaster = CdsPhaseBroadcaster(SyncWriter(InMemorySyncOutbox())),
         )
@@ -235,6 +264,28 @@ class CheckoutViewModelTest {
 
         assertTrue(vm.uiState.value.isSettled)
         assertEquals(1, paymentRepo.store.values.count { it.status == PaymentStatus.PAID })
+    }
+
+    @Test
+    fun `group buying voucher must validate before redeem and records voucher payment`() = runTest {
+        val voucherRepo = FakeGroupBuyingVoucherRepo()
+        val (vm, paymentRepo, _) = buildViewModel(
+            order = baseOrder().copy(subtotalMinorUnit = 800L),
+            groupBuyingVoucherRepo = voucherRepo,
+        )
+        vm.setGroupBuyingCode("DY-DEMO-1001")
+
+        vm.validateGroupBuyingVoucher()
+        assertTrue(voucherRepo.validateCalled)
+        assertNotNull(vm.uiState.value.validatedGroupBuyingVoucher)
+
+        vm.redeemGroupBuyingVoucher()
+        assertTrue(voucherRepo.redeemCalled)
+        assertTrue(vm.uiState.value.isSettled)
+        assertEquals(PaymentMethod.VOUCHER, paymentRepo.store.values.single().method)
+        assertEquals("", vm.uiState.value.groupBuyingCode)
+        assertNull(vm.uiState.value.validatedGroupBuyingVoucher)
+        assertEquals("", vm.uiState.value.groupBuyingIdempotencyKey)
     }
 
     @Test
