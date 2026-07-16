@@ -1,6 +1,9 @@
 package com.restaurantpos.server.routes
 
 import com.restaurantpos.server.db.tables.MenuItemsTable
+import com.restaurantpos.server.auth.requirePermission
+import com.restaurantpos.server.menu.MenuCommandService
+import com.restaurantpos.server.menu.isSoldOutOnlyMutation
 import com.restaurantpos.server.model.*
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -11,11 +14,12 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
-fun Route.adminMenuRoutes() {
+fun Route.adminMenuRoutes(commandService: MenuCommandService = MenuCommandService()) {
     authenticate("jwt") {
         route("/admin/menu") {
 
             get {
+                if (!call.requirePermission("menu.view")) return@get
                 val items = transaction {
                     MenuItemsTable.selectAll()
                         .orderBy(MenuItemsTable.categoryId to SortOrder.ASC, MenuItemsTable.course to SortOrder.ASC)
@@ -25,24 +29,9 @@ fun Route.adminMenuRoutes() {
             }
 
             post {
+                if (!call.requirePermission("menu.edit")) return@post
                 val req = call.receive<CreateMenuItemRequest>()
-                val now = System.currentTimeMillis()
-                transaction {
-                    MenuItemsTable.insert {
-                        it[id]                = req.id
-                        it[names]             = req.names
-                        it[priceMinorUnit]    = req.priceMinorUnit
-                        it[taxRateId]         = req.taxRateId
-                        it[categoryId]        = req.categoryId
-                        it[course]            = req.course
-                        it[isSoldOut]         = false
-                        it[imageUrl]          = req.imageUrl
-                        it[allergens]         = req.allergens
-                        it[availableChannels] = req.availableChannels.joinToString("|")
-                        it[stockCount]        = req.stockCount
-                        it[updatedAt]         = now
-                    }
-                }
+                commandService.create(req)
                 call.respond(HttpStatusCode.Created, mapOf("id" to req.id))
             }
 
@@ -50,43 +39,26 @@ fun Route.adminMenuRoutes() {
                 patch {
                     val itemId = call.parameters["id"]!!
                     val req = call.receive<UpdateMenuItemRequest>()
-                    val now = System.currentTimeMillis()
-                    val updated = transaction {
-                        MenuItemsTable.update({ MenuItemsTable.id eq itemId }) { stmt ->
-                            req.names?.let { stmt[names] = it }
-                            req.priceMinorUnit?.let { stmt[priceMinorUnit] = it }
-                            req.taxRateId?.let { stmt[taxRateId] = it }
-                            req.categoryId?.let { stmt[categoryId] = it }
-                            req.course?.let { stmt[course] = it }
-                            req.isSoldOut?.let { stmt[isSoldOut] = it }
-                            req.imageUrl?.let { stmt[imageUrl] = it }
-                            req.allergens?.let { stmt[allergens] = it }
-                            req.availableChannels?.let { stmt[availableChannels] = it.joinToString("|") }
-                            req.stockCount?.let { stmt[stockCount] = it }
-                            stmt[updatedAt] = now
-                        }
-                    }
-                    if (updated == 0) call.respond(HttpStatusCode.NotFound, ErrorResponse("Menu item not found"))
+                    val permission = if (req.isSoldOutOnlyMutation()) "menu.sold_out" else "menu.edit"
+                    if (!call.requirePermission(permission)) return@patch
+                    val updated = commandService.update(itemId, req)
+                    if (!updated) call.respond(HttpStatusCode.NotFound, ErrorResponse("Menu item not found"))
                     else call.respond(HttpStatusCode.OK, mapOf("updated" to true))
                 }
 
                 delete {
+                    if (!call.requirePermission("menu.edit")) return@delete
                     val itemId = call.parameters["id"]!!
-                    val deleted = transaction { MenuItemsTable.deleteWhere { id eq itemId } }
-                    if (deleted == 0) call.respond(HttpStatusCode.NotFound, ErrorResponse("Menu item not found"))
+                    val deleted = commandService.delete(itemId)
+                    if (!deleted) call.respond(HttpStatusCode.NotFound, ErrorResponse("Menu item not found"))
                     else call.respond(HttpStatusCode.OK, mapOf("deleted" to true))
                 }
             }
 
             post("/bulk-availability") {
+                if (!call.requirePermission("menu.sold_out")) return@post
                 val req = call.receive<BulkAvailabilityRequest>()
-                val now = System.currentTimeMillis()
-                val count = transaction {
-                    MenuItemsTable.update({ MenuItemsTable.id inList req.ids }) {
-                        it[isSoldOut] = req.isSoldOut
-                        it[updatedAt] = now
-                    }
-                }
+                val count = commandService.setAvailability(req.ids, req.isSoldOut)
                 call.respond(mapOf("updatedCount" to count))
             }
         }

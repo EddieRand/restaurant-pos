@@ -59,6 +59,14 @@ object DatabaseFactory {
                 ModifierGroupsTable,
                 ModifierOptionsTable,
                 SettingsTable,
+                AiPriceProposalsTable,
+                AiPriceProposalChangesTable,
+                AiMutationAuditsTable,
+                AiWorkspaceSessionsTable,
+                AiWorkspaceMessagesTable,
+                AiWorkspaceRunsTable,
+                AiWorkspaceRunStepsTable,
+                AiWorkspaceEventsTable,
                 MenuProfilesTable,
                 MenuItemProfilesTable,
                 WaiterCallsTable,
@@ -92,6 +100,8 @@ object DatabaseFactory {
                 ShiftSchedulesTable,
                 GiftCardsTable,
                 GiftCardTransactionsTable,
+                GroupBuyingVouchersTable,
+                GroupBuyingRedemptionsTable,
                 CdsStateTable,
             )
             seedDefaultChannels()
@@ -101,6 +111,31 @@ object DatabaseFactory {
             seedDefaultAdmin()
             seedDefaultRolesAndPermissions()
             seedDefaultPaymentMethods()
+            seedDemoGroupBuyingVouchers()
+        }
+    }
+
+    private fun seedDemoGroupBuyingVouchers() {
+        if (GroupBuyingVouchersTable.selectAll().count() > 0) return
+        val now = System.currentTimeMillis()
+        val expiry = now + 30L * 24 * 60 * 60 * 1000
+        listOf(
+            listOf("demo-douyin-1001", "DOUYIN", "DY-DEMO-1001", "抖音咖啡双人团购套餐", "880"),
+            listOf("demo-meituan-1001", "MEITUAN", "MT-DEMO-1001", "美团到店 10 元代金券", "1000"),
+        ).forEach { row ->
+            val normalizedCode = row[2].uppercase()
+            GroupBuyingVouchersTable.insert {
+                it[id] = row[0]
+                it[provider] = row[1]
+                it[codeHash] = sha256(normalizedCode)
+                it[codeLast4] = normalizedCode.takeLast(4)
+                it[title] = row[3]
+                it[faceValueMinorUnit] = row[4].toLong()
+                it[expiresAt] = expiry
+                it[status] = "AVAILABLE"
+                it[demo] = true
+                it[createdAt] = now
+            }
         }
     }
 

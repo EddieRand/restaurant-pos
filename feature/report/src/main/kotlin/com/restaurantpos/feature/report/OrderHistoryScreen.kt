@@ -48,8 +48,9 @@ import com.restaurantpos.core.model.OrderType
 import java.text.SimpleDateFormat
 import java.util.*
 
-private val rowTimeFmt = SimpleDateFormat("HH:mm", Locale.US)
-private val detailDateFmt = SimpleDateFormat("MMM d, yyyy HH:mm", Locale.US)
+private val rowTimeFmt = SimpleDateFormat("HH:mm", Locale.SIMPLIFIED_CHINESE)
+private val detailDateFmt = SimpleDateFormat("yyyy年M月d日 HH:mm", Locale.SIMPLIFIED_CHINESE)
+private const val CASHIER_DISPLAY_LOCALE = "zh-CN"
 
 @Composable
 fun OrderHistoryScreen(
@@ -60,7 +61,7 @@ fun OrderHistoryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val formatter = remember(uiState.regionConfig) { AmountFormatter(uiState.regionConfig) }
-    val locale = uiState.regionConfig.locale
+    val locale = CASHIER_DISPLAY_LOCALE
 
     LaunchedEffect(uiState.query) { viewModel.search() }
 
@@ -407,11 +408,12 @@ private fun StaffAvatar(operatorId: String, size: Int) {
 private fun staffName(operatorId: String): String =
     operatorId.removePrefix("user-").replaceFirstChar { it.uppercase() }.ifBlank { "—" }
 
+@Composable
 private fun tableOrType(order: Order): String =
-    order.tableId?.let { "Table ${it.removePrefix("table-").removePrefix("T")}" } ?: when (order.type) {
-        OrderType.TAKEAWAY -> "Takeaway"
-        OrderType.DELIVERY -> "Delivery"
-        else -> "Dine in"
+    order.tableId?.let { stringResource(R.string.ohs_table_fmt, it.removePrefix("table-").removePrefix("T")) } ?: when (order.type) {
+        OrderType.TAKEAWAY -> stringResource(R.string.ohs_type_takeaway)
+        OrderType.DELIVERY -> stringResource(R.string.ohs_type_delivery)
+        else -> stringResource(R.string.ohs_type_dine_in)
     }
 
 private fun typeIcon(type: OrderType): ImageVector = when (type) {

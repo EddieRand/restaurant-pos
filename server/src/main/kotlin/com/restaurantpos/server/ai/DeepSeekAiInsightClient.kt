@@ -5,6 +5,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -15,7 +16,10 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.math.BigDecimal
 import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
 
 class DeepSeekAiInsightClient(
     private val apiKey: String,
@@ -28,15 +32,41 @@ class DeepSeekAiInsightClient(
     private val json = Json { ignoreUnknownKeys = true }
 
     override suspend fun generate(metrics: AiInsightMetrics, locale: String): AiGeneratedInsight = withContext(Dispatchers.IO) {
+        val formattedPeriod = formatInsightPeriod(metrics.fromMs, metrics.toMs)
+        val aggregateEvidence = JsonObject(
+            json.encodeToJsonElement(AiInsightMetrics.serializer(), metrics).jsonObject
+                .filterKeys { it != "fromMs" && it != "toMs" },
+        )
+        val formattedMoney = buildJsonObject {
+            put("grossRevenue", formatMoney(metrics.grossRevenueMinorUnit, metrics))
+            put("netRevenue", formatMoney(metrics.netRevenueMinorUnit, metrics))
+            put("averageOrderValue", formatMoney(metrics.averageOrderValueMinorUnit, metrics))
+            put("totalDiscount", formatMoney(metrics.totalDiscountMinorUnit, metrics))
+            put("totalRefund", formatMoney(metrics.totalRefundMinorUnit, metrics))
+            put("previousPeriodNetRevenue", formatMoney(metrics.previousPeriodNetRevenueMinorUnit, metrics))
+            put("paymentMethods", metrics.paymentMethodBreakdown.entries.joinToString(", ") { (method, amount) ->
+                "$method=${formatMoney(amount, metrics)}"
+            })
+            put("topItemRevenue", metrics.topItems.joinToString(", ") { item ->
+                "${item.name}=${formatMoney(item.revenueMinorUnit, metrics)}"
+            })
+        }
         val prompt = """
             You are a restaurant operations analyst. Explain only the supplied aggregate data; never invent values.
             Return JSON with exactly: headline, summary, observations, actions.
             observations must contain objects with severity (positive|neutral|warning), title, detail, evidenceKeys.
             actions must contain exactly three objects with priority (high|medium|low), title, reason.
-            Write in locale $locale. Monetary values are integer minor units. No markdown.
+            Write in locale $locale. Never calculate business values yourself.
+            When mentioning money, copy the server-formatted monetary evidence verbatim and never repeat raw minor-unit integers.
+            The reporting period is server-formatted as "$formattedPeriod". If mentioning dates, copy that text verbatim.
+            Never infer or calculate calendar dates from epoch timestamps; epoch timestamps are intentionally not supplied.
+            When mentioning period changes, use only the supplied basis-point fields (100 basis points = 1%). No markdown.
 
-            Aggregate data:
-            ${json.encodeToString(metrics)}
+            Aggregate data (raw values are for evidence-key matching only):
+            $aggregateEvidence
+
+            Server-formatted monetary evidence:
+            $formattedMoney
         """.trimIndent()
         val payload = buildJsonObject {
             put("model", model)
@@ -85,4 +115,14 @@ class DeepSeekAiInsightClient(
         runCatching { json.decodeFromString<AiGeneratedInsight>(content) }
             .getOrElse { throw AiProviderException("AI_INVALID_RESPONSE", "DeepSeek returned invalid JSON", true) }
     }
+
+    private fun formatMoney(minor: Long, metrics: AiInsightMetrics): String =
+        "${metrics.currencyCode} ${BigDecimal.valueOf(minor).movePointLeft(metrics.minorUnitDigits).setScale(metrics.minorUnitDigits).toPlainString()}"
+}
+
+internal fun formatInsightPeriod(fromMs: Long, toMs: Long, zoneId: ZoneId = ZoneId.systemDefault()): String {
+    val from = Instant.ofEpochMilli(fromMs).atZone(zoneId).toLocalDate()
+    val inclusiveToMs = (toMs - 1).coerceAtLeast(fromMs)
+    val to = Instant.ofEpochMilli(inclusiveToMs).atZone(zoneId).toLocalDate()
+    return if (from == to) from.toString() else "$from 至 $to"
 }

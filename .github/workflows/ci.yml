@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, demo/2026-07-cashier-web-ai]
+    branches: [main, demo/2026-07-cashier-web-ai, ai/2026-07-two-plane]
   pull_request:
-    branches: [main, demo/2026-07-cashier-web-ai]
+    branches: [main, demo/2026-07-cashier-web-ai, ai/2026-07-two-plane]
 
 jobs:
   web-admin:

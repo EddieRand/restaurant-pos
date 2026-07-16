@@ -1021,3 +1021,54 @@ data class GiftCardTransactionDto(
     val note: String,
     val createdAt: Long,
 )
+
+// ── Douyin / Meituan group-buying voucher redemption ────────────────────────
+
+@Serializable
+data class GroupBuyingVoucherValidateRequest(val provider: String, val code: String)
+
+@Serializable
+data class GroupBuyingVoucherDto(
+    val provider: String,
+    val maskedCode: String,
+    val title: String,
+    val faceValueMinorUnit: Long,
+    val expiresAt: Long,
+    val status: String,
+    val demo: Boolean,
+)
+
+@Serializable
+data class GroupBuyingVoucherRedeemRequest(
+    val provider: String,
+    val code: String,
+    val orderId: String,
+    val operatorId: String = "",
+    val requestedAmountMinorUnit: Long,
+    val idempotencyKey: String,
+)
+
+@Serializable
+data class GroupBuyingVoucherRedeemResponse(
+    val redemptionId: String,
+    val redeemedAmountMinorUnit: Long,
+    val alreadyRedeemed: Boolean = false,
+)
+
+@Serializable
+data class GroupBuyingRedemptionDto(
+    val id: String,
+    val provider: String,
+    val maskedCode: String,
+    val title: String,
+    val orderId: String,
+    val operatorId: String,
+    val redeemedAmountMinorUnit: Long,
+    val providerReference: String,
+    val status: String,
+    val demo: Boolean,
+    val createdAt: Long,
+)
+
+@Serializable
+data class GroupBuyingVoucherErrorResponse(val code: String, val message: String)

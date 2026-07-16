@@ -157,25 +157,25 @@ fun PadConfigScreen(
             }
 
             // ── Ordering options ──────────────────────────────────────────────
-            item { SectionLabel("Ordering Options") }
+            item { SectionLabel(stringResource(R.string.pad_ordering_options)) }
 
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     ToggleRow(
-                        label = "Allow item notes",
-                        description = "Guest can add free-text notes to each item",
+                        label = stringResource(R.string.pad_allow_item_notes),
+                        description = stringResource(R.string.pad_allow_item_notes_desc),
                         checked = pad.allowItemNotes,
                         onCheckedChange = { viewModel.updatePadConfig { p -> p.copy(allowItemNotes = it) } },
                     )
                     ToggleRow(
-                        label = "Show running total",
-                        description = "Displays cart subtotal in real time",
+                        label = stringResource(R.string.pad_show_running_total),
+                        description = stringResource(R.string.pad_show_running_total_desc),
                         checked = pad.showRunningTotal,
                         onCheckedChange = { viewModel.updatePadConfig { p -> p.copy(showRunningTotal = it) } },
                     )
                     ToggleRow(
-                        label = "Show order history",
-                        description = "Guest can review previously submitted items",
+                        label = stringResource(R.string.pad_show_order_history),
+                        description = stringResource(R.string.pad_show_order_history_desc),
                         checked = pad.showOrderHistory,
                         onCheckedChange = { viewModel.updatePadConfig { p -> p.copy(showOrderHistory = it) } },
                     )
@@ -183,12 +183,12 @@ fun PadConfigScreen(
             }
 
             // ── AYCE (All-You-Can-Eat) ────────────────────────────────────────
-            item { SectionLabel("All-You-Can-Eat (AYCE)") }
+            item { SectionLabel(stringResource(R.string.pad_ayce_section)) }
 
             item {
                 ToggleRow(
-                    label = "Enable AYCE mode",
-                    description = "Activates round-based ordering with cooldown timers",
+                    label = stringResource(R.string.pad_ayce_enable),
+                    description = stringResource(R.string.pad_ayce_enable_desc),
                     checked = pad.ayceEnabled,
                     onCheckedChange = { viewModel.updatePadConfig { p -> p.copy(ayceEnabled = it) } },
                 )
@@ -203,7 +203,7 @@ fun PadConfigScreen(
                         ) {
                             Text(stringResource(R.string.pad_ayce_default_rules), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                             Text(
-                                "These apply when no package is selected. Per-package settings override these.",
+                                stringResource(R.string.pad_ayce_default_rules_desc),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -352,7 +352,7 @@ private fun AycePackageCard(pkg: AycePackage, onDelete: () -> Unit) {
                 }
             }
             IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Remove", modifier = Modifier.size(20.dp))
+                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.pad_remove_package), modifier = Modifier.size(20.dp))
             }
         }
     }

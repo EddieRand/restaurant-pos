@@ -107,6 +107,12 @@
     <string name="qsr_view_order">查看订单</string>
     <string name="qsr_auto_close">即将自动关闭…</string>
     <string name="qsr_confirm_clear_cart">清空购物车全部菜品？</string>
+    <string name="pos_clear_search">清除搜索</string>
+    <string name="pos_decrease_quantity">减少数量</string>
+    <string name="pos_increase_quantity">增加数量</string>
+    <string name="pos_discount_percentage">折扣比例（%）</string>
+    <string name="pos_discount_amount">折扣金额</string>
+    <string name="pos_discount_preview">优惠：%1$s</string>
     <string name="qsr_pickup_label">取餐号</string>
     <string name="qsr_order_type_dine_in_desc">无需桌号</string>
     <string name="qsr_order_type_takeaway_desc">前台取餐</string>

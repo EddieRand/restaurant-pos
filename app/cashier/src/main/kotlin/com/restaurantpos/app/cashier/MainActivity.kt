@@ -1,5 +1,7 @@
 package com.restaurantpos.app.cashier
 
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -33,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -61,9 +64,14 @@ import com.restaurantpos.feature.settings.TicketConfigScreen
 import com.restaurantpos.feature.tables.TablesScreen
 import com.restaurantpos.feature.tables.TakeawayQueueScreen
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Locale
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(newBase.withCashierLocale())
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -275,17 +283,27 @@ private fun DiscountsScreen(onBack: () -> Unit) {
         Row(Modifier.fillMaxWidth().background(PosShellBg).padding(horizontal = 20.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
             Spacer(Modifier.width(8.dp))
-            Text("Discounts", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = PosTextPrimary)
+            Text(stringResource(R.string.discounts_title), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = PosTextPrimary)
         }
         HorizontalDivider(color = PosHairline)
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(Icons.Filled.Percent, contentDescription = null, tint = SunmiOrange, modifier = Modifier.size(64.dp))
                 Spacer(Modifier.height(16.dp))
-                Text("Discount Management", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = PosTextPrimary)
+                Text(stringResource(R.string.discounts_management_title), fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = PosTextPrimary)
                 Spacer(Modifier.height(8.dp))
-                Text("Configure discount rules in Web Admin.\nThey will sync to this terminal automatically.", fontSize = 14.sp, color = PosTextSecondary)
+                Text(stringResource(R.string.discounts_management_hint), fontSize = 14.sp, color = PosTextSecondary)
             }
         }
     }
+}
+
+private fun Context.withCashierLocale(): Context {
+    val locale = Locale.SIMPLIFIED_CHINESE
+    Locale.setDefault(locale)
+    val localized = Configuration(resources.configuration).apply {
+        setLocale(locale)
+        setLayoutDirection(locale)
+    }
+    return createConfigurationContext(localized)
 }

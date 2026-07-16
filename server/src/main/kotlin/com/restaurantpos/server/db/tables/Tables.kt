@@ -305,6 +305,38 @@ object GiftCardTransactionsTable : Table("gift_card_transactions") {
     override val primaryKey = PrimaryKey(id)
 }
 
+/** Platform voucher catalogue used by the demo adapter. Raw voucher codes are never stored. */
+object GroupBuyingVouchersTable : Table("group_buying_vouchers") {
+    val id = varchar("id", 64)
+    val provider = varchar("provider", 16)
+    val codeHash = varchar("code_hash", 64)
+    val codeLast4 = varchar("code_last4", 4)
+    val title = varchar("title", 160)
+    val faceValueMinorUnit = long("face_value_minor_unit")
+    val expiresAt = long("expires_at")
+    val status = varchar("status", 24).default("AVAILABLE")
+    val demo = bool("demo").default(false)
+    val createdAt = long("created_at")
+    init { uniqueIndex(provider, codeHash) }
+    override val primaryKey = PrimaryKey(id)
+}
+
+object GroupBuyingRedemptionsTable : Table("group_buying_redemptions") {
+    val id = varchar("id", 64)
+    val provider = varchar("provider", 16)
+    val voucherId = varchar("voucher_id", 64).uniqueIndex()
+    val codeLast4 = varchar("code_last4", 4)
+    val orderId = varchar("order_id", 64).index()
+    val operatorId = varchar("operator_id", 64).default("")
+    val redeemedAmountMinorUnit = long("redeemed_amount_minor_unit")
+    val idempotencyKey = varchar("idempotency_key", 96).uniqueIndex()
+    val providerReference = varchar("provider_reference", 96)
+    val status = varchar("status", 24).default("SUCCEEDED")
+    val demo = bool("demo").default(false)
+    val createdAt = long("created_at")
+    override val primaryKey = PrimaryKey(id)
+}
+
 object CombosTable : Table("combos") {
     val id = varchar("id", 64)
     val names = text("names")                       // JSON map
@@ -328,6 +360,118 @@ object SettingsTable : Table("settings") {
     val key = varchar("key", 64)
     val value = text("value")                       // JSON blob
     override val primaryKey = PrimaryKey(key)
+}
+
+// ── Controlled AI write plane ───────────────────────────────────────────────
+
+object AiPriceProposalsTable : Table("ai_price_proposals") {
+    val id = varchar("id", 64)
+    val actorId = varchar("actor_id", 64)
+    val instruction = varchar("instruction", 512)
+    val locale = varchar("locale", 32)
+    val status = varchar("status", 24)
+    val tool = varchar("tool", 64)
+    val currencyCode = varchar("currency_code", 8)
+    val minorUnitDigits = integer("minor_unit_digits")
+    val createdAt = long("created_at")
+    val expiresAt = long("expires_at").index()
+    val executedAt = long("executed_at").nullable()
+    override val primaryKey = PrimaryKey(id)
+}
+
+object AiPriceProposalChangesTable : Table("ai_price_proposal_changes") {
+    val proposalId = varchar("proposal_id", 64).index()
+    val itemId = varchar("item_id", 64)
+    val itemName = varchar("item_name", 256)
+    val oldPriceMinorUnit = long("old_price_minor_unit")
+    val newPriceMinorUnit = long("new_price_minor_unit")
+    val deltaMinorUnit = long("delta_minor_unit")
+    val deltaPercentBasisPoints = long("delta_percent_basis_points").nullable()
+    val expectedUpdatedAt = long("expected_updated_at")
+    override val primaryKey = PrimaryKey(proposalId, itemId)
+}
+
+object AiMutationAuditsTable : Table("ai_mutation_audits") {
+    val id = varchar("id", 64)
+    val actorId = varchar("actor_id", 64)
+    val proposalId = varchar("proposal_id", 64).uniqueIndex()
+    val tool = varchar("tool", 64)
+    val entityType = varchar("entity_type", 32)
+    val entityId = varchar("entity_id", 64)
+    val beforeMinorUnit = long("before_minor_unit")
+    val afterMinorUnit = long("after_minor_unit")
+    val idempotencyKey = varchar("idempotency_key", 128).uniqueIndex()
+    val createdAt = long("created_at")
+    override val primaryKey = PrimaryKey(id)
+}
+
+// ── Unified AI workspace ────────────────────────────────────────────────────
+
+object AiWorkspaceSessionsTable : Table("ai_workspace_sessions") {
+    val id = varchar("id", 64)
+    val actorId = varchar("actor_id", 64).index()
+    val title = varchar("title", 160)
+    val expert = varchar("expert", 32)
+    val locale = varchar("locale", 16)
+    val createdAt = long("created_at")
+    val updatedAt = long("updated_at").index()
+    override val primaryKey = PrimaryKey(id)
+}
+
+object AiWorkspaceMessagesTable : Table("ai_workspace_messages") {
+    val id = varchar("id", 64)
+    val sessionId = varchar("session_id", 64).index()
+    val role = varchar("role", 16)
+    val content = text("content")
+    val createdAt = long("created_at")
+    override val primaryKey = PrimaryKey(id)
+}
+
+object AiWorkspaceRunsTable : Table("ai_workspace_runs") {
+    val id = varchar("id", 64)
+    val sessionId = varchar("session_id", 64).index()
+    val messageId = varchar("message_id", 64)
+    val status = varchar("status", 24)
+    val createdAt = long("created_at")
+    val completedAt = long("completed_at").nullable()
+    val errorCode = varchar("error_code", 64).nullable()
+    val errorMessage = text("error_message").nullable()
+    val errorRetryable = bool("error_retryable").default(false)
+    val clarificationJson = text("clarification_json").nullable()
+    override val primaryKey = PrimaryKey(id)
+}
+
+object AiWorkspaceRunStepsTable : Table("ai_workspace_run_steps") {
+    val id = varchar("id", 64)
+    val runId = varchar("run_id", 64).index()
+    val position = integer("position")
+    val tool = varchar("tool", 64)
+    val kind = varchar("kind", 24)
+    val status = varchar("status", 32)
+    val dependsOnJson = text("depends_on_json").default("[]")
+    val displayTitle = varchar("display_title", 256)
+    val instruction = text("instruction")
+    val queryType = varchar("query_type", 32).nullable()
+    val resultJson = text("result_json").nullable()
+    val proposalId = varchar("proposal_id", 64).nullable().index()
+    val errorCode = varchar("error_code", 64).nullable()
+    val errorMessage = text("error_message").nullable()
+    val errorRetryable = bool("error_retryable").default(false)
+    override val primaryKey = PrimaryKey(id)
+}
+
+object AiWorkspaceEventsTable : Table("ai_workspace_events") {
+    val runId = varchar("run_id", 64).index()
+    val sequence = long("sequence")
+    val type = varchar("type", 64)
+    val occurredAt = long("occurred_at")
+    val stepJson = text("step_json").nullable()
+    val runStatus = varchar("run_status", 24).nullable()
+    val errorCode = varchar("error_code", 64).nullable()
+    val errorMessage = text("error_message").nullable()
+    val errorRetryable = bool("error_retryable").default(false)
+    val clarificationJson = text("clarification_json").nullable()
+    override val primaryKey = PrimaryKey(runId, sequence)
 }
 
 // ── CRM ───────────────────────────────────────────────────────────────────────

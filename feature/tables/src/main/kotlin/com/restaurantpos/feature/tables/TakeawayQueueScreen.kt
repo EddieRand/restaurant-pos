@@ -103,9 +103,9 @@ private fun TakeawayOrderCard(
         else -> MaterialTheme.colorScheme.surface
     }
     val typeLabel = when (order.type) {
-        OrderType.TAKEAWAY -> "Takeaway"
-        OrderType.DELIVERY -> "Delivery"
-        else -> order.type.name
+        OrderType.TAKEAWAY -> stringResource(R.string.tables_takeaway)
+        OrderType.DELIVERY -> stringResource(R.string.tables_delivery)
+        else -> stringResource(R.string.tbl_dine_in)
     }
     val shortId = order.id.takeLast(6).uppercase()
 

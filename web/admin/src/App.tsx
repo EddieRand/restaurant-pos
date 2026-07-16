@@ -19,6 +19,8 @@ import CdsManagementPage from './pages/CdsManagementPage'
 import QrOrderingPage from './pages/QrOrderingPage'
 import ReservationsPage from './pages/ReservationsPage'
 import ReservationSettingsPage from './pages/ReservationSettingsPage'
+import AiWorkspacePage from './pages/AiWorkspacePage'
+import GroupBuyingRedemptionsPage from './pages/GroupBuyingRedemptionsPage'
 
 export default function App() {
   return (
@@ -35,6 +37,7 @@ export default function App() {
           }
         >
           <Route index element={<ErrorBoundary label="Dashboard"><DashboardPage /></ErrorBoundary>} />
+          <Route path="ai" element={<ErrorBoundary label="AI Workspace"><AiWorkspacePage /></ErrorBoundary>} />
           <Route path="menu" element={<ErrorBoundary label="Menu"><MenuPage /></ErrorBoundary>} />
           <Route path="crm" element={<ErrorBoundary label="CRM"><CRMPage /></ErrorBoundary>} />
           <Route path="reservations" element={<ErrorBoundary label="Reservations"><ReservationsPage /></ErrorBoundary>} />
@@ -48,6 +51,7 @@ export default function App() {
           <Route path="inventory" element={<ErrorBoundary label="Inventory"><InventoryPage /></ErrorBoundary>} />
           <Route path="reports" element={<ErrorBoundary label="Reports"><ReportPage /></ErrorBoundary>} />
           <Route path="orders" element={<ErrorBoundary label="Orders"><OrdersPage /></ErrorBoundary>} />
+          <Route path="group-buying" element={<ErrorBoundary label="GroupBuying"><GroupBuyingRedemptionsPage /></ErrorBoundary>} />
           <Route path="users" element={<ErrorBoundary label="Users"><UsersPage /></ErrorBoundary>} />
           <Route path="settings" element={<ErrorBoundary label="Settings"><SettingsPage /></ErrorBoundary>} />
         </Route>

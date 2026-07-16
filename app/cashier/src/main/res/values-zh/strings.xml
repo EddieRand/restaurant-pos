@@ -13,4 +13,14 @@
     <string name="sidebar_online">在线</string>
     <string name="sidebar_offline">离线</string>
     <string name="sidebar_shift_fmt">班次：%1$s</string>
+    <string name="sidebar_default_shift">收银员</string>
+    <string name="discounts_title">折扣</string>
+    <string name="discounts_management_title">折扣管理</string>
+    <string name="discounts_management_hint">请在 Web 管理后台配置折扣规则。\n规则会自动同步到当前收银终端。</string>
+    <string name="waiter_calls_title">桌台呼叫：</string>
+    <string name="waiter_call_acknowledge">确认处理</string>
+    <string name="waiter_call_service">需要服务</string>
+    <string name="waiter_call_bill">请求结账</string>
+    <string name="waiter_call_water">需要加水</string>
+    <string name="waiter_call_utensils">需要餐具</string>
 </resources>

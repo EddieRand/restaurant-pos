@@ -1,0 +1,6 @@
+login.md
+dashboard.md
+menu.md
+orders-reports.md
+cashier-sync.md
+ai-workspace.md

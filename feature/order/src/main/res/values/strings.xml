@@ -122,6 +122,12 @@
     <string name="qsr_view_order">View Order</string>
     <string name="qsr_auto_close">Auto-closing…</string>
     <string name="qsr_confirm_clear_cart">Remove all items from cart?</string>
+    <string name="pos_clear_search">Clear search</string>
+    <string name="pos_decrease_quantity">Decrease quantity</string>
+    <string name="pos_increase_quantity">Increase quantity</string>
+    <string name="pos_discount_percentage">Percentage (%)</string>
+    <string name="pos_discount_amount">Amount</string>
+    <string name="pos_discount_preview">Discount: %1$s</string>
     <string name="qsr_pickup_label">Pickup No.</string>
     <string name="qsr_order_type_dine_in_desc">No table required</string>
     <string name="qsr_order_type_takeaway_desc">Pickup at counter</string>

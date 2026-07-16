@@ -2,6 +2,7 @@
 <resources>
     <string name="tables_title">Tables</string>
     <string name="tables_takeaway">Takeaway</string>
+    <string name="tables_delivery">Delivery</string>
     <string name="tables_tab_floor">Floor</string>
     <string name="tables_tab_reservations">Reservations</string>
     <string name="tables_new_reservation">New Reservation</string>
@@ -38,6 +39,8 @@
     <string name="tbl_add_table">Add Table</string>
     <string name="tbl_more">More</string>
     <string name="tbl_area_all">All Areas</string>
+    <string name="tbl_area_indoor">Indoor</string>
+    <string name="tbl_area_outdoor">Outdoor</string>
     <string name="tbl_view_floor_plan">Floor Plan</string>
     <string name="tbl_main_entrance">Main Entrance</string>
     <string name="tbl_bar">BAR</string>
@@ -128,4 +131,12 @@
     <string name="tbl_dine_in">Dine In</string>
     <string name="tbl_table_12">Table 12</string>
     <string name="tbl_view_floor_plan_label">View: Floor Plan</string>
+    <string name="tbl_zoom_in">Zoom in</string>
+    <string name="tbl_zoom_out">Zoom out</string>
+    <string name="tbl_filter_fmt">Filter: %1$s</string>
+    <string name="tbl_guest_table_fmt">%1$d guests · %2$s</string>
+    <string name="tbl_capacity_short_fmt">%1$d p</string>
+    <string name="tbl_status_seats_fmt">%1$s · %2$d seats</string>
+    <string name="tbl_table_seats_fmt">%1$s · %2$d seats</string>
+    <string name="tbl_waitlist_guest_fmt">%1$d guests · %2$s</string>
 </resources>

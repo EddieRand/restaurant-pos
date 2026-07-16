@@ -3,6 +3,8 @@ package com.restaurantpos.feature.checkout
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -17,6 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.restaurantpos.core.config.AmountFormatter
 import com.restaurantpos.core.model.Customer
 import com.restaurantpos.core.model.PaymentMethod
+import com.restaurantpos.core.domain.repository.GroupBuyingVoucherRepository
 import com.restaurantpos.core.model.PaymentStatus
 
 @Composable
@@ -61,7 +64,7 @@ fun CheckoutScreen(
     Row(modifier = modifier.fillMaxSize()) {
         // Left panel — order summary + adjustments
         Column(
-            modifier = Modifier.weight(1f).fillMaxHeight().padding(24.dp),
+            modifier = Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()).padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(stringResource(R.string.checkout_title), style = MaterialTheme.typography.headlineMedium)
@@ -111,7 +114,7 @@ fun CheckoutScreen(
 
         // Right panel — payment actions
         Column(
-            modifier = Modifier.weight(1f).fillMaxHeight().padding(24.dp),
+            modifier = Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()).padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -179,7 +182,7 @@ fun CheckoutScreen(
                         if (uiState.isLoading) {
                             CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
                         } else {
-                            Text(method.name.replace('_', ' '), style = MaterialTheme.typography.titleMedium)
+                            Text(paymentMethodLabel(method), style = MaterialTheme.typography.titleMedium)
                         }
                     }
                 }
@@ -211,6 +214,84 @@ fun CheckoutScreen(
                     )
                 }
 
+                HorizontalDivider()
+                Text(
+                    text = stringResource(R.string.checkout_group_buying_title),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(
+                        selected = uiState.groupBuyingProvider == GroupBuyingVoucherRepository.Provider.DOUYIN,
+                        onClick = { viewModel.setGroupBuyingProvider(GroupBuyingVoucherRepository.Provider.DOUYIN) },
+                        label = { Text(stringResource(R.string.checkout_group_buying_douyin)) },
+                    )
+                    FilterChip(
+                        selected = uiState.groupBuyingProvider == GroupBuyingVoucherRepository.Provider.MEITUAN,
+                        onClick = { viewModel.setGroupBuyingProvider(GroupBuyingVoucherRepository.Provider.MEITUAN) },
+                        label = { Text(stringResource(R.string.checkout_group_buying_meituan)) },
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    OutlinedTextField(
+                        value = uiState.groupBuyingCode,
+                        onValueChange = viewModel::setGroupBuyingCode,
+                        label = { Text(stringResource(R.string.checkout_group_buying_code)) },
+                        placeholder = { Text(stringResource(R.string.checkout_group_buying_hint)) },
+                        singleLine = true,
+                        enabled = uiState.isOnline && !uiState.isLoading,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Button(
+                        onClick = viewModel::validateGroupBuyingVoucher,
+                        enabled = uiState.isOnline && !uiState.isLoading && uiState.groupBuyingCode.isNotBlank(),
+                        modifier = Modifier.height(56.dp),
+                    ) { Text(stringResource(R.string.checkout_group_buying_validate)) }
+                }
+                uiState.validatedGroupBuyingVoucher?.let { voucher ->
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(voucher.title, style = MaterialTheme.typography.titleSmall)
+                            Text(
+                                stringResource(
+                                    R.string.checkout_group_buying_verified,
+                                    voucher.maskedCode,
+                                    formatter.format(voucher.faceValueMinorUnit),
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                            if (voucher.demo) {
+                                Text(
+                                    stringResource(R.string.checkout_group_buying_demo_badge),
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                    style = MaterialTheme.typography.labelMedium,
+                                )
+                            }
+                            Button(
+                                onClick = viewModel::redeemGroupBuyingVoucher,
+                                enabled = !uiState.isLoading && uiState.remainingMinorUnit > 0,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text(
+                                    stringResource(
+                                        R.string.checkout_group_buying_confirm,
+                                        formatter.format(minOf(voucher.faceValueMinorUnit, uiState.remainingMinorUnit)),
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+                if (!uiState.isOnline) {
+                    Text(
+                        stringResource(R.string.checkout_group_buying_offline),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+
                 OutlinedButton(
                     onClick = { viewModel.activateSplitMode(2) },
                     modifier = Modifier.fillMaxWidth(),
@@ -235,7 +316,7 @@ fun CheckoutScreen(
                                         onClick = { viewModel.payShareWithMethod(share.index, method) },
                                         modifier = Modifier.weight(1f),
                                         enabled = uiState.remainingMinorUnit > 0,
-                                    ) { Text(method.name.take(4)) }
+                                    ) { Text(paymentMethodLabel(method)) }
                                 }
                             }
                         }
@@ -517,7 +598,7 @@ private fun PaymentHistoryCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("${payment.method.name}: ${formatter.format(payment.amountMinorUnit)}")
+                    Text(stringResource(R.string.checkout_payment_history_item, paymentMethodLabel(payment.method), formatter.format(payment.amountMinorUnit)))
                     TextButton(onClick = { onRefund(payment.id) }) {
                         Text(stringResource(R.string.checkout_refund))
                     }
@@ -525,4 +606,14 @@ private fun PaymentHistoryCard(
             }
         }
     }
+}
+
+@Composable
+private fun paymentMethodLabel(method: PaymentMethod): String = when (method) {
+    PaymentMethod.CASH -> stringResource(R.string.checkout_pay_cash)
+    PaymentMethod.CARD -> stringResource(R.string.checkout_pay_card)
+    PaymentMethod.QR_CODE -> stringResource(R.string.checkout_pay_qr)
+    PaymentMethod.VOUCHER -> stringResource(R.string.checkout_pay_voucher)
+    PaymentMethod.GIFT_CARD -> stringResource(R.string.checkout_pay_gift_card)
+    PaymentMethod.OTHER -> stringResource(R.string.checkout_pay_other)
 }
