@@ -281,6 +281,117 @@ class AiWorkspaceRoutesTest {
     }
 
     @Test
+    fun `growth proposal asks every missing operator value instead of accepting planner defaults`() = testApplication {
+        val model = FakeWorkspaceModel(
+            AiWorkspacePlan(
+                listOf(
+                    AiWorkspacePlannedStep(
+                        AiWorkspaceTools.CRM_COUPON_CAMPAIGN_PROPOSAL,
+                        "创建优惠券活动",
+                        "为全部顾客创建固定优惠 10 元、有效期 30 天的活动",
+                    ),
+                ),
+            ),
+        )
+        val insight = insightService()
+        val price = AiPriceAgentService(null, enabled = true, priceUpdateEnabled = true)
+        val workspace = AiWorkspaceService(model, insight, price, enabled = true, permissionChecker = { _, _ -> true })
+        application { configurePlugins(); configureAuth(); configureRouting(insight, price, workspace) }
+        val client = createClient { install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) } }
+        val sessionId = client.post("/admin/ai/workspace/sessions") {
+            adminAuth(); contentType(ContentType.Application.Json); setBody(CreateAiWorkspaceSessionRequest(AiWorkspaceExpert.GROWTH))
+        }.body<AiWorkspaceSessionDto>().sessionId
+
+        val original = "做一个优惠券活动"
+        client.post("/admin/ai/workspace/sessions/$sessionId/messages") {
+            adminAuth(); contentType(ContentType.Application.Json)
+            setBody(AiWorkspaceMessageRequest(sessionId, AiWorkspaceExpert.GROWTH, original))
+        }
+        var session = awaitRunCount(client, sessionId, 1)
+        assertEquals("你希望固定优惠多少钱？", session.runs.last().clarification?.question)
+
+        val withAmount = "原始请求：$original\n补充确认：固定优惠金额：8 元\n请基于以上信息继续处理原始请求。"
+        client.post("/admin/ai/workspace/sessions/$sessionId/messages") {
+            adminAuth(); contentType(ContentType.Application.Json)
+            setBody(AiWorkspaceMessageRequest(sessionId, AiWorkspaceExpert.GROWTH, withAmount))
+        }
+        session = awaitRunCount(client, sessionId, 2)
+        assertEquals("优惠券有效期多久？", session.runs.last().clarification?.question)
+
+        val withDays = "原始请求：$withAmount\n补充确认：有效期：14 天\n请基于以上信息继续处理原始请求。"
+        client.post("/admin/ai/workspace/sessions/$sessionId/messages") {
+            adminAuth(); contentType(ContentType.Application.Json)
+            setBody(AiWorkspaceMessageRequest(sessionId, AiWorkspaceExpert.GROWTH, withDays))
+        }
+        session = awaitRunCount(client, sessionId, 3)
+        assertEquals("这次活动面向哪类顾客？", session.runs.last().clarification?.question)
+    }
+
+    @Test
+    fun `growth proposal revision and execution are restored through the workspace session`() = testApplication {
+        val model = FakeWorkspaceModel(
+            AiWorkspacePlan(
+                listOf(
+                    AiWorkspacePlannedStep(
+                        AiWorkspaceTools.CRM_COUPON_CAMPAIGN_PROPOSAL,
+                        "创建优惠券活动",
+                        "固定优惠金额 8 元，有效期 14 天，面向 30 天未到店顾客",
+                    ),
+                ),
+            ),
+        )
+        val insight = insightService()
+        val price = AiPriceAgentService(null, enabled = true, priceUpdateEnabled = true)
+        val growth = AiGrowthService(AiGrowthCopyGenerator { _, _ ->
+            GrowthGeneratedCopy("增长重点", "真实证据摘要", listOf("建议一", "建议二", "建议三"), "内容草稿")
+        })
+        val workspace = AiWorkspaceService(
+            model,
+            insight,
+            price,
+            enabled = true,
+            growthService = growth,
+            permissionChecker = { _, _ -> true },
+        )
+        application { configurePlugins(); configureAuth(); configureRouting(insight, price, workspace, growth) }
+        val client = createClient { install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) } }
+        val sessionId = client.post("/admin/ai/workspace/sessions") {
+            adminAuth(); contentType(ContentType.Application.Json); setBody(CreateAiWorkspaceSessionRequest(AiWorkspaceExpert.GROWTH))
+        }.body<AiWorkspaceSessionDto>().sessionId
+        client.post("/admin/ai/workspace/sessions/$sessionId/messages") {
+            adminAuth(); contentType(ContentType.Application.Json)
+            setBody(
+                AiWorkspaceMessageRequest(
+                    sessionId,
+                    AiWorkspaceExpert.GROWTH,
+                    "固定优惠金额 8 元，有效期 14 天，面向 30 天未到店顾客",
+                ),
+            )
+        }
+        var session = awaitRun(client, sessionId)
+        val original = session.runs.single().steps.single().result!!.growthProposal!!
+
+        val revised = client.post("/admin/ai/growth/proposals/${original.proposalId}/revise") {
+            adminAuth(); contentType(ContentType.Application.Json)
+            setBody(ReviseAiGrowthProposalRequest(900, 21, "HIGH_VALUE"))
+        }.body<AiGrowthProposalResponse>()
+        session = client.get("/admin/ai/workspace/sessions/$sessionId") { adminAuth() }.body()
+        val restoredRevision = session.runs.single().steps.single()
+        assertEquals(revised.proposalId, restoredRevision.proposalId)
+        assertEquals(2, restoredRevision.result!!.growthProposal!!.version)
+        assertEquals(21, restoredRevision.result!!.growthProposal!!.editableParams.validDays)
+
+        val executed = client.post("/admin/ai/growth/proposals/${revised.proposalId}/execute") {
+            adminAuth(); contentType(ContentType.Application.Json)
+            setBody(ExecuteAiGrowthProposalRequest(true, "workspace-growth-idem"))
+        }.body<ExecuteAiGrowthProposalResponse>()
+        session = client.get("/admin/ai/workspace/sessions/$sessionId") { adminAuth() }.body()
+        val restoredExecution = session.runs.single().steps.single()
+        assertEquals(AiWorkspaceStepStatus.EXECUTED, restoredExecution.status)
+        assertEquals(executed.auditId, restoredExecution.result!!.growthExecution!!.auditId)
+    }
+
+    @Test
     fun `planner ambiguity is persisted as selectable clarification without executing`() = testApplication {
         val clarification = AiWorkspaceClarification(
             "你要调整哪一道宫保鸡丁？",

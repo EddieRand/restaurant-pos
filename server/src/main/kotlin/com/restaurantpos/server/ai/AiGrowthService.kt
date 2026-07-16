@@ -68,6 +68,7 @@ class AiGrowthService(
             evidence = snapshot.evidence + demoSignals(),
             suggestions = copy.suggestions.take(3),
             contentDraft = copy.contentDraft,
+            demoSignalNotice = "演示信号，不代表抖音官方数据",
         )
         transaction {
             AiGrowthBriefingsTable.insertIgnore {
@@ -78,7 +79,14 @@ class AiGrowthService(
                 it[AiGrowthBriefingsTable.generatedAt] = generatedAt
             }
         }
-        return response
+        // insertIgnore protects the unique business-date/fingerprint key. Re-read
+        // the winner so concurrent first visits always receive the same briefing ID.
+        return transaction {
+            AiGrowthBriefingsTable.selectAll().where {
+                (AiGrowthBriefingsTable.businessDate eq snapshot.businessDate) and
+                    (AiGrowthBriefingsTable.dataFingerprint eq snapshot.fingerprint)
+            }.first().let { json.decodeFromString(it[AiGrowthBriefingsTable.payloadJson]) }
+        }
     }
 
     fun createProposal(actorId: String, request: CreateAiGrowthProposalRequest): AiGrowthProposalResponse {

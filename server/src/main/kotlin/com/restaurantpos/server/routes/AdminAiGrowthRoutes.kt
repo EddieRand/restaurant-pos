@@ -29,7 +29,12 @@ fun Route.adminAiGrowthRoutes(service: AiGrowthService, workspaceService: AiWork
             post("/proposals/{proposalId}/revise") {
                 if (!call.hasPermission(AiGrowthPermissions.CAMPAIGN_MANAGE)) return@post call.growthForbidden()
                 call.respondGrowthErrors {
-                    call.respond(service.revise(call.actorId(), call.parameters["proposalId"].orEmpty(), call.receive<ReviseAiGrowthProposalRequest>()))
+                    val actorId = call.actorId()
+                    val oldProposalId = call.parameters["proposalId"].orEmpty()
+                    val response = service.revise(actorId, oldProposalId, call.receive<ReviseAiGrowthProposalRequest>())
+                    runCatching { workspaceService?.markGrowthProposalRevised(actorId, oldProposalId, response) }
+                        .onFailure { call.application.environment.log.error("Failed to link AI growth revision", it) }
+                    call.respond(response)
                 }
             }
             post("/proposals/{proposalId}/execute") {
