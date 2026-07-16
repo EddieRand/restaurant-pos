@@ -1,0 +1,25 @@
+app/cashier/src/main/kotlin/com/restaurantpos/app/cashier/MainActivity.kt
+  s_1c80a6f4eb339d::t_dbaec509e23984 34-36,40-42,97-99,117,119-132,169,186
+feature/order/src/main/kotlin/com/restaurantpos/feature/order/OrderScreen.kt
+  s_1c80a6f4eb339d::t_66b40fae9a5004 107-108,219,331,368,373
+feature/tables/src/main/kotlin/com/restaurantpos/feature/tables/TablesScreen.kt
+  s_1c80a6f4eb339d::t_69e55598f93260 118-119,133
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "eda900ee32de0eae0730ee2697d3c218116ca1cc",
+  "prompts": {},
+  "sessions": {
+    "s_1c80a6f4eb339d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1a255ba6-873e-4a8d-ba13-d703ff828bfb",
+        "model": "unknown"
+      },
+      "human_author": "EddieRand <EddieRand@users.noreply.github.com>"
+    }
+  },
+  "attestation_metadata": {},
+  "remote_transcripts": {}
+}
