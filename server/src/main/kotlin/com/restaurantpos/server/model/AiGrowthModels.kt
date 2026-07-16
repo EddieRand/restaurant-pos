@@ -62,6 +62,13 @@ data class AiGrowthProposalResponse(
 )
 
 @Serializable
+data class CreateAiGrowthProposalRequest(
+    val fixedAmountMinorUnit: Long,
+    val validDays: Int,
+    val targetSegment: String,
+)
+
+@Serializable
 data class ReviseAiGrowthProposalRequest(
     val fixedAmountMinorUnit: Long? = null,
     val validDays: Int? = null,

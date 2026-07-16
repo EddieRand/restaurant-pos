@@ -37,6 +37,7 @@ class AiWorkspaceService(
     private val insightService: AiInsightService,
     private val priceService: AiPriceAgentService,
     private val enabled: Boolean,
+    private val growthService: AiGrowthService? = null,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
     private val permissionChecker: (String, String) -> Boolean = ::workspaceActorHasPermission,
     private val now: () -> Long = System::currentTimeMillis,
@@ -204,6 +205,25 @@ class AiWorkspaceService(
         }
     }
 
+    fun markGrowthProposalExecuted(actorId: String, response: ExecuteAiGrowthProposalResponse) {
+        transaction {
+            val stepRow = AiWorkspaceRunStepsTable.selectAll()
+                .where { AiWorkspaceRunStepsTable.proposalId eq response.proposalId }
+                .firstOrNull() ?: return@transaction
+            val runId = stepRow[AiWorkspaceRunStepsTable.runId]
+            ownedRun(actorId, runId)
+            val prior = stepRow[AiWorkspaceRunStepsTable.resultJson]
+                ?.let { json.decodeFromString<AiWorkspaceStepResultDto>(it) }
+                ?: AiWorkspaceStepResultDto()
+            val result = prior.copy(growthExecution = response)
+            AiWorkspaceRunStepsTable.update({ AiWorkspaceRunStepsTable.id eq stepRow[AiWorkspaceRunStepsTable.id] }) {
+                it[status] = AiWorkspaceStepStatus.EXECUTED.name
+                it[resultJson] = json.encodeToString(result)
+            }
+            appendEvent(runId, "step.executed", loadStep(stepRow[AiWorkspaceRunStepsTable.id]))
+        }
+    }
+
     private suspend fun processRun(
         actorId: String,
         runId: String,
@@ -273,9 +293,21 @@ class AiWorkspaceService(
                                 priceService.createProposal(actorId, AiPriceProposalRequest(planned.instruction, request.locale))
                             },
                         )
+                        AiWorkspaceTools.GROWTH_DAILY_BRIEFING,
+                        AiWorkspaceTools.GROWTH_CONTENT_DRAFT,
+                        -> AiWorkspaceStepResultDto(
+                            growthBriefing = requireToolPermission(actorId, AiGrowthPermissions.CAMPAIGN_MANAGE).let {
+                                requireGrowthService().today()
+                            },
+                        )
+                        AiWorkspaceTools.CRM_COUPON_CAMPAIGN_PROPOSAL -> AiWorkspaceStepResultDto(
+                            growthProposal = requireToolPermission(actorId, AiGrowthPermissions.CAMPAIGN_MANAGE).let {
+                                requireGrowthService().createProposal(actorId, growthProposalRequest(planned.instruction))
+                            },
+                        )
                         else -> throw AiWorkspaceException("AI_UNSUPPORTED_INTENT", "工具不受支持")
                     }
-                    val proposalId = result.priceProposal?.proposalId
+                    val proposalId = result.priceProposal?.proposalId ?: result.growthProposal?.proposalId
                     val status = if (proposalId == null) AiWorkspaceStepStatus.SUCCEEDED else AiWorkspaceStepStatus.AWAITING_CONFIRMATION
                     updateStep(stepId, status, result, proposalId = proposalId)
                     appendStepEvent(runId, if (proposalId == null) "step.completed" else "step.awaiting_confirmation", stepId)
@@ -299,7 +331,9 @@ class AiWorkspaceService(
         allowedTools: Set<String>,
         request: AiWorkspaceMessageRequest,
     ): AiWorkspaceClarification? {
-        val clarification = plan.clarification ?: missingPeriodClarification(plan, request)
+        val clarification = plan.clarification
+            ?: missingPeriodClarification(plan, request)
+            ?: missingGrowthClarification(plan)
         if (clarification != null) {
             require(clarification.question.trim().length in 1..256) { "clarification question is invalid" }
             require(clarification.options.size in 2..4) { "clarification must contain 2 to 4 options" }
@@ -348,6 +382,43 @@ class AiWorkspaceService(
         )
     }
 
+    private fun missingGrowthClarification(plan: AiWorkspacePlan): AiWorkspaceClarification? {
+        val instruction = plan.steps.firstOrNull { it.tool == AiWorkspaceTools.CRM_COUPON_CAMPAIGN_PROPOSAL }?.instruction ?: return null
+        if (!Regex("(\\d{1,4})\\s*元").containsMatchIn(instruction)) {
+            return AiWorkspaceClarification(
+                "你希望固定优惠多少钱？",
+                listOf(
+                    AiWorkspaceClarificationOption("amount_5", "5 元", "固定优惠金额：5 元"),
+                    AiWorkspaceClarificationOption("amount_8", "8 元", "固定优惠金额：8 元"),
+                    AiWorkspaceClarificationOption("amount_10", "10 元", "固定优惠金额：10 元"),
+                ),
+            )
+        }
+        if (!Regex("(\\d{1,2})\\s*天").containsMatchIn(instruction)) {
+            return AiWorkspaceClarification(
+                "优惠券有效期多久？",
+                listOf(
+                    AiWorkspaceClarificationOption("days_7", "7 天", "有效期：7 天"),
+                    AiWorkspaceClarificationOption("days_14", "14 天", "有效期：14 天"),
+                    AiWorkspaceClarificationOption("days_30", "30 天", "有效期：30 天"),
+                ),
+            )
+        }
+        val hasSegment = listOf("全部顾客", "所有顾客", "全量顾客", "30天未到店", "三十天未到店", "沉睡", "流失", "高价值", "高消费", "VIP")
+            .any(instruction::contains)
+        if (!hasSegment) {
+            return AiWorkspaceClarification(
+                "这次活动面向哪类顾客？",
+                listOf(
+                    AiWorkspaceClarificationOption("segment_inactive", "30 天未到店", "目标客群：30 天未到店顾客"),
+                    AiWorkspaceClarificationOption("segment_high_value", "高价值顾客", "目标客群：高价值顾客"),
+                    AiWorkspaceClarificationOption("segment_all", "全部顾客", "目标客群：全部顾客"),
+                ),
+            )
+        }
+        return null
+    }
+
     private fun hasRecognizedPeriod(message: String): Boolean {
         val normalized = message.replace(" ", "")
         return listOf(
@@ -375,6 +446,23 @@ class AiWorkspaceService(
         AiWorkspaceTools.CRM_COUPON_CAMPAIGN_PROPOSAL,
         -> AiWorkspaceStepKind.ACTION
         else -> AiWorkspaceStepKind.ANALYSIS
+    }
+
+    private fun requireGrowthService(): AiGrowthService = growthService
+        ?: throw AiWorkspaceException("AI_GROWTH_NOT_CONFIGURED", "增长参谋服务未配置")
+
+    private fun growthProposalRequest(instruction: String): CreateAiGrowthProposalRequest {
+        val amountYuan = Regex("(\\d{1,4})\\s*元").find(instruction)?.groupValues?.get(1)?.toLongOrNull()
+            ?: throw AiWorkspaceException("AI_NEEDS_CLARIFICATION", "请明确固定优惠金额")
+        val validDays = Regex("(\\d{1,2})\\s*天").find(instruction)?.groupValues?.get(1)?.toIntOrNull()
+            ?: throw AiWorkspaceException("AI_NEEDS_CLARIFICATION", "请明确有效天数")
+        val segment = when {
+            listOf("30天未到店", "三十天未到店", "沉睡", "流失").any(instruction::contains) -> "INACTIVE_30_DAYS"
+            listOf("高价值", "高消费", "VIP").any(instruction::contains) -> "HIGH_VALUE"
+            listOf("全部顾客", "所有顾客", "全量顾客").any(instruction::contains) -> "ALL"
+            else -> throw AiWorkspaceException("AI_NEEDS_CLARIFICATION", "请选择目标客群")
+        }
+        return CreateAiGrowthProposalRequest(amountYuan * 100, validDays, segment)
     }
 
     private fun resolvePeriod(message: String, context: AiWorkspaceContextDto): Pair<Long, Long> {
@@ -584,6 +672,7 @@ class AiWorkspaceService(
     private fun Throwable.toWorkspaceError(): AiWorkspaceStepErrorDto = when (this) {
         is AiWorkspaceException -> AiWorkspaceStepErrorDto(code, message, retryable)
         is AiAgentException -> AiWorkspaceStepErrorDto(code, message, retryable)
+        is AiGrowthException -> AiWorkspaceStepErrorDto(code, message, retryable)
         is AiProviderException -> AiWorkspaceStepErrorDto(code, message ?: "AI provider error", retryable)
         is AiNotConfiguredException -> AiWorkspaceStepErrorDto("AI_NOT_CONFIGURED", "DeepSeek API is not configured")
         is TimeoutCancellationException -> AiWorkspaceStepErrorDto("AI_TIMEOUT", "AI request timed out", true)
@@ -598,6 +687,7 @@ class AiWorkspaceService(
         fun fromEnvironment(
             insightService: AiInsightService,
             priceService: AiPriceAgentService,
+            growthService: AiGrowthService = AiGrowthService.fromEnvironment(),
         ): AiWorkspaceService {
             val apiKey = System.getenv("DEEPSEEK_API_KEY")?.trim().orEmpty()
             val baseUrl = System.getenv("DEEPSEEK_BASE_URL")?.trim().takeUnless { it.isNullOrEmpty() }
@@ -607,7 +697,7 @@ class AiWorkspaceService(
             val client = apiKey.takeIf(String::isNotEmpty)?.let { DeepSeekAiWorkspaceClient(it, baseUrl, model) }
             val enabled = System.getenv("AI_WORKSPACE_ENABLED")?.toBooleanStrictOrNull()
                 ?: System.getenv("AI_AGENT_ENABLED").toBoolean()
-            return AiWorkspaceService(client, insightService, priceService, enabled)
+            return AiWorkspaceService(client, insightService, priceService, enabled, growthService)
         }
     }
 }
