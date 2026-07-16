@@ -51,6 +51,11 @@ fun Route.adminAiWorkspaceRoutes(service: AiWorkspaceService) {
                             add(AiWorkspaceTools.REPORT_QUERY)
                         }
                         if (call.hasPermission("menu.edit")) add(AiWorkspaceTools.MENU_UPDATE_PRICE)
+                        if (call.hasPermission(AiGrowthPermissions.CAMPAIGN_MANAGE)) {
+                            add(AiWorkspaceTools.GROWTH_DAILY_BRIEFING)
+                            add(AiWorkspaceTools.GROWTH_CONTENT_DRAFT)
+                            add(AiWorkspaceTools.CRM_COUPON_CAMPAIGN_PROPOSAL)
+                        }
                     }
                     val response = service.acceptMessage(
                         call.actorId(),
