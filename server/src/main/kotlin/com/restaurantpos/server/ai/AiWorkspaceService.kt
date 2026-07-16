@@ -362,11 +362,18 @@ class AiWorkspaceService(
         AiWorkspaceExpert.OPERATIONS -> setOf(AiWorkspaceTools.OPERATING_INSIGHT, AiWorkspaceTools.REPORT_QUERY)
         AiWorkspaceExpert.PRODUCT_HELP -> setOf(AiWorkspaceTools.HOW_TO_SEARCH)
         AiWorkspaceExpert.MENU -> setOf(AiWorkspaceTools.REPORT_QUERY, AiWorkspaceTools.MENU_UPDATE_PRICE)
+        AiWorkspaceExpert.GROWTH -> setOf(
+            AiWorkspaceTools.GROWTH_DAILY_BRIEFING,
+            AiWorkspaceTools.GROWTH_CONTENT_DRAFT,
+            AiWorkspaceTools.CRM_COUPON_CAMPAIGN_PROPOSAL,
+        )
     }
 
     private fun kindFor(tool: String): AiWorkspaceStepKind = when (tool) {
         AiWorkspaceTools.HOW_TO_SEARCH -> AiWorkspaceStepKind.HOW_TO
-        AiWorkspaceTools.MENU_UPDATE_PRICE -> AiWorkspaceStepKind.ACTION
+        AiWorkspaceTools.MENU_UPDATE_PRICE,
+        AiWorkspaceTools.CRM_COUPON_CAMPAIGN_PROPOSAL,
+        -> AiWorkspaceStepKind.ACTION
         else -> AiWorkspaceStepKind.ANALYSIS
     }
 

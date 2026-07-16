@@ -9,6 +9,7 @@ enum class AiWorkspaceExpert {
     OPERATIONS,
     PRODUCT_HELP,
     MENU,
+    GROWTH,
 }
 
 @Serializable
@@ -106,6 +107,9 @@ data class AiWorkspaceStepResultDto(
     val howTo: AiWorkspaceHowToResultDto? = null,
     val priceProposal: AiPriceProposalResponse? = null,
     val execution: ExecuteAiPriceProposalResponse? = null,
+    val growthBriefing: AiGrowthBriefingResponse? = null,
+    val growthProposal: AiGrowthProposalResponse? = null,
+    val growthExecution: ExecuteAiGrowthProposalResponse? = null,
 )
 
 @Serializable
@@ -208,7 +212,18 @@ object AiWorkspaceTools {
     const val REPORT_QUERY = "report.query"
     const val HOW_TO_SEARCH = "product.howto_search"
     const val MENU_UPDATE_PRICE = "menu.update_price"
-    val all = setOf(OPERATING_INSIGHT, REPORT_QUERY, HOW_TO_SEARCH, MENU_UPDATE_PRICE)
+    const val GROWTH_DAILY_BRIEFING = "growth.daily_briefing"
+    const val GROWTH_CONTENT_DRAFT = "growth.content_draft"
+    const val CRM_COUPON_CAMPAIGN_PROPOSAL = "crm.coupon_campaign_proposal"
+    val all = setOf(
+        OPERATING_INSIGHT,
+        REPORT_QUERY,
+        HOW_TO_SEARCH,
+        MENU_UPDATE_PRICE,
+        GROWTH_DAILY_BRIEFING,
+        GROWTH_CONTENT_DRAFT,
+        CRM_COUPON_CAMPAIGN_PROPOSAL,
+    )
 }
 
 object AiWorkspaceEvidenceUnits {
