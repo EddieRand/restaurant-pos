@@ -27,8 +27,10 @@ class AiWorkspaceContractTest {
 
     @Test
     fun `workspace registry exposes only approved tools and evidence units`() {
-        assertEquals(4, AiWorkspaceTools.all.size)
+        assertEquals(7, AiWorkspaceTools.all.size)
         assertTrue(AiWorkspaceTools.all.contains(AiWorkspaceTools.MENU_UPDATE_PRICE))
+        assertTrue(AiWorkspaceTools.all.contains(AiWorkspaceTools.GROWTH_DAILY_BRIEFING))
+        assertTrue(AiWorkspaceTools.all.contains(AiWorkspaceTools.CRM_COUPON_CAMPAIGN_PROPOSAL))
         assertEquals(setOf("MINOR_UNIT", "COUNT", "BASIS_POINTS"), AiWorkspaceEvidenceUnits.all)
         assertEquals(
             setOf("ANALYSIS", "HOW_TO", "ACTION"),

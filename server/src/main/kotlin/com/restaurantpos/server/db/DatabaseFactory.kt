@@ -280,7 +280,7 @@ object DatabaseFactory {
         }
 
         // 2. Insert default permission matrix
-        // Admin: ALL 27
+        // Admin: all built-in permissions.
         val allKeys = listOf(
             "order.create", "order.modify", "order.void_item", "order.void",
             "order.transfer", "order.merge", "order.split", "order.note",
@@ -290,6 +290,7 @@ object DatabaseFactory {
             "report.daily", "report.shift", "report.export",
             "settings.region", "settings.printer", "settings.receipt", "settings.tax",
             "staff.manage", "staff.roles",
+            "crm.campaign.manage",
         )
         // Manager: all except sensitive system settings (region/tax)
         val managerExcept = setOf("settings.region", "settings.tax")
