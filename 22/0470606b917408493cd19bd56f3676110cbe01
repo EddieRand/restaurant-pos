@@ -1,0 +1,21 @@
+web/admin/src/pages/AiWorkspacePage.tsx
+  s_1c80a6f4eb339d::t_75062983465960 375-376
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "220470606b917408493cd19bd56f3676110cbe01",
+  "prompts": {},
+  "sessions": {
+    "s_1c80a6f4eb339d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1a255ba6-873e-4a8d-ba13-d703ff828bfb",
+        "model": "unknown"
+      },
+      "human_author": "EddieRand <EddieRand@users.noreply.github.com>"
+    }
+  },
+  "attestation_metadata": {},
+  "remote_transcripts": {}
+}
