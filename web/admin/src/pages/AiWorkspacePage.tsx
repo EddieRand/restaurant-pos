@@ -372,8 +372,8 @@ export default function AiWorkspacePage() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="border-b border-gray-200 bg-white px-4 py-4 sm:px-6">
-          <div className="mx-auto flex max-w-5xl items-start justify-between gap-3">
-            <div className="min-w-0"><div className="flex items-center gap-2"><button type="button" onClick={() => setMobileSessionsOpen(true)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-500 xl:hidden" aria-label={copy.sessions}>☰</button><div><p className="text-[11px] font-semibold tracking-[0.16em] text-brand-600">RESTAURANT AI</p><h1 className="truncate text-xl font-semibold text-gray-900 sm:text-2xl">{copy.title}</h1></div></div><p className="mt-1 hidden text-sm text-gray-500 sm:block">{copy.subtitle}</p></div>
+          <div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0"><div className="flex items-center gap-2"><button type="button" onClick={() => setMobileSessionsOpen(true)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-500 xl:hidden" aria-label={copy.sessions}>☰</button><div className="min-w-0 flex-1"><p className="text-[11px] font-semibold tracking-[0.16em] text-brand-600">RESTAURANT AI</p><h1 className="truncate text-xl font-semibold text-gray-900 sm:text-2xl">{copy.title}</h1></div></div><p className="mt-1 hidden text-sm text-gray-500 sm:block">{copy.subtitle}</p></div>
             <button type="button" onClick={() => { void createSession() }} className="btn-secondary shrink-0 px-3 py-2 text-xs sm:px-4">+ {copy.newSession}</button>
           </div>
         </header>
