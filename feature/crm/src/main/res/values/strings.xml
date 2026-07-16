@@ -42,4 +42,6 @@
     <string name="cust_new_order">New Order</string>
     <string name="cust_badge_vip">VIP</string>
     <string name="cust_badge_new">New</string>
+    <string name="cust_today">Today</string>
+    <string name="cust_yesterday">Yesterday</string>
 </resources>

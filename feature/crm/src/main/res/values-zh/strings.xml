@@ -42,4 +42,6 @@
     <string name="cust_new_order">新建订单</string>
     <string name="cust_badge_vip">VIP</string>
     <string name="cust_badge_new">新客</string>
+    <string name="cust_today">今天</string>
+    <string name="cust_yesterday">昨天</string>
 </resources>

@@ -649,7 +649,7 @@ private fun CategoryRoutingEditor(
                 }
             },
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Add route")
+            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.ticket_add_route))
         }
     }
 }
@@ -679,7 +679,7 @@ fun PrinterStationsScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { showAddDialog = true }) {
-                Icon(Icons.Default.Add, contentDescription = "Add printer")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.ticket_add_printer))
             }
         },
     ) { padding ->
@@ -810,28 +810,30 @@ private fun SectionHeader(text: String) {
 
 // ── Extension helpers ─────────────────────────────────────────────────────
 
+@Composable
 fun TicketType.displayName(): String = when (this) {
-    TicketType.CUSTOMER_RECEIPT -> "Customer Receipt"
-    TicketType.KITCHEN_TICKET   -> "Kitchen Ticket"
-    TicketType.BAR_TICKET       -> "Bar Ticket"
-    TicketType.TAKEAWAY_LABEL   -> "Takeaway Label"
-    TicketType.PRE_BILL         -> "Pre-Bill / Check"
-    TicketType.REFUND_RECEIPT   -> "Refund Receipt"
-    TicketType.VOID_RECEIPT     -> "Void Receipt"
-    TicketType.SHIFT_REPORT     -> "Shift Report"
-    TicketType.DAILY_REPORT     -> "Daily Report"
+    TicketType.CUSTOMER_RECEIPT -> stringResource(R.string.ticket_type_customer_receipt)
+    TicketType.KITCHEN_TICKET   -> stringResource(R.string.ticket_type_kitchen)
+    TicketType.BAR_TICKET       -> stringResource(R.string.ticket_type_bar)
+    TicketType.TAKEAWAY_LABEL   -> stringResource(R.string.ticket_type_takeaway_label)
+    TicketType.PRE_BILL         -> stringResource(R.string.ticket_type_pre_bill)
+    TicketType.REFUND_RECEIPT   -> stringResource(R.string.ticket_type_refund)
+    TicketType.VOID_RECEIPT     -> stringResource(R.string.ticket_type_void)
+    TicketType.SHIFT_REPORT     -> stringResource(R.string.ticket_type_shift_report)
+    TicketType.DAILY_REPORT     -> stringResource(R.string.ticket_type_daily_report)
 }
 
+@Composable
 fun TicketType.defaultTitle(): String = when (this) {
-    TicketType.CUSTOMER_RECEIPT -> "RECEIPT"
-    TicketType.KITCHEN_TICKET   -> "KITCHEN"
-    TicketType.BAR_TICKET       -> "BAR"
-    TicketType.TAKEAWAY_LABEL   -> "TAKEAWAY"
-    TicketType.PRE_BILL         -> "PRE-BILL"
-    TicketType.REFUND_RECEIPT   -> "REFUND"
-    TicketType.VOID_RECEIPT     -> "VOID"
-    TicketType.SHIFT_REPORT     -> "SHIFT REPORT"
-    TicketType.DAILY_REPORT     -> "DAILY REPORT"
+    TicketType.CUSTOMER_RECEIPT -> stringResource(R.string.ticket_title_receipt)
+    TicketType.KITCHEN_TICKET   -> stringResource(R.string.ticket_title_kitchen)
+    TicketType.BAR_TICKET       -> stringResource(R.string.ticket_title_bar)
+    TicketType.TAKEAWAY_LABEL   -> stringResource(R.string.ticket_title_takeaway)
+    TicketType.PRE_BILL         -> stringResource(R.string.ticket_title_pre_bill)
+    TicketType.REFUND_RECEIPT   -> stringResource(R.string.ticket_title_refund)
+    TicketType.VOID_RECEIPT     -> stringResource(R.string.ticket_title_void)
+    TicketType.SHIFT_REPORT     -> stringResource(R.string.ticket_title_shift_report)
+    TicketType.DAILY_REPORT     -> stringResource(R.string.ticket_title_daily_report)
 }
 
 @Composable

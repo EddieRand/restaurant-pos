@@ -13,4 +13,14 @@
     <string name="sidebar_online">Online</string>
     <string name="sidebar_offline">Offline</string>
     <string name="sidebar_shift_fmt">Shift: %1$s</string>
+    <string name="sidebar_default_shift">Cashier</string>
+    <string name="discounts_title">Discounts</string>
+    <string name="discounts_management_title">Discount management</string>
+    <string name="discounts_management_hint">Configure discount rules in Web Admin.\nThey will sync to this terminal automatically.</string>
+    <string name="waiter_calls_title">Table calls:</string>
+    <string name="waiter_call_acknowledge">Acknowledge</string>
+    <string name="waiter_call_service">Service</string>
+    <string name="waiter_call_bill">Bill please</string>
+    <string name="waiter_call_water">Need water</string>
+    <string name="waiter_call_utensils">Need utensils</string>
 </resources>

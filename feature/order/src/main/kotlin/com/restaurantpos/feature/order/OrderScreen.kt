@@ -86,6 +86,8 @@ private fun Map<String, String>.localeName(locale: String): String {
     return this[lang] ?: this[locale] ?: this["en"] ?: values.firstOrNull() ?: ""
 }
 
+private const val CASHIER_DISPLAY_LOCALE = "zh-CN"
+
 @Composable
 fun OrderScreen(
     onOrderPlaced: (orderId: String) -> Unit,
@@ -121,7 +123,7 @@ fun OrderScreen(
             groups = uiState.pendingModifierGroups,
             selections = uiState.modifierSelections,
             formatter = formatter,
-            locale = uiState.regionConfig.locale,
+            locale = CASHIER_DISPLAY_LOCALE,
             onToggle = viewModel::onModifierToggled,
             onConfirm = viewModel::confirmModifiers,
             onDismiss = viewModel::dismissModifiers,
@@ -133,7 +135,7 @@ fun OrderScreen(
         val editItem = uiState.items.find { it.id == editId }
         if (editItem != null) {
             ItemNoteDialog(
-                itemName = editItem.menuItemNameSnapshot.entries.firstOrNull()?.value ?: "",
+                itemName = editItem.menuItemNameSnapshot.localeName(CASHIER_DISPLAY_LOCALE),
                 currentNote = editItem.notes,
                 onConfirm = { note -> viewModel.saveItemNote(editId, note) },
                 onDismiss = viewModel::dismissNoteEdit,
@@ -161,7 +163,7 @@ fun OrderScreen(
             items = uiState.items.filter { it.status != OrderItemStatus.REFUNDED },
             selectedIds = uiState.splitSelectedItemIds,
             formatter = formatter,
-            locale = uiState.regionConfig.locale,
+            locale = CASHIER_DISPLAY_LOCALE,
             onToggle = viewModel::toggleSplitItem,
             onConfirm = viewModel::confirmSplit,
             onDismiss = viewModel::dismissSplitDialog,
@@ -198,7 +200,7 @@ fun OrderScreen(
         )
     }
 
-    val locale = uiState.regionConfig.locale
+    val locale = CASHIER_DISPLAY_LOCALE
 
     Column(modifier = modifier.fillMaxSize().background(PosContentBg)) {
         // Shared top bar (order type + table/guests/customer + search/scan)
@@ -422,7 +424,7 @@ private fun PosTopBar(
             singleLine = true,
             placeholder = { Text(stringResource(R.string.pos_search_menu), fontSize = 14.sp) },
             leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, tint = PosTextMuted, modifier = Modifier.size(18.dp)) },
-            trailingIcon = { if (searchQuery.isNotEmpty()) IconButton(onClick = { onSearchChange("") }) { Icon(Icons.Filled.Close, contentDescription = "Clear", modifier = Modifier.size(16.dp)) } },
+            trailingIcon = { if (searchQuery.isNotEmpty()) IconButton(onClick = { onSearchChange("") }) { Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.pos_clear_search), modifier = Modifier.size(16.dp)) } },
             shape = RoundedCornerShape(10.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = SunmiOrange,
@@ -1277,14 +1279,14 @@ private fun QtyStepper(quantity: Int, editable: Boolean, onIncrement: () -> Unit
                 modifier = Modifier.size(30.dp).clickableNoRipple(onDecrement),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.Filled.Remove, contentDescription = "Decrease", tint = PosTextSecondary, modifier = Modifier.size(16.dp))
+                Icon(Icons.Filled.Remove, contentDescription = stringResource(R.string.pos_decrease_quantity), tint = PosTextSecondary, modifier = Modifier.size(16.dp))
             }
             Text("$quantity", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = PosTextPrimary, modifier = Modifier.widthIn(min = 18.dp), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             Box(
                 modifier = Modifier.size(30.dp).clickableNoRipple(onIncrement),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Increase", tint = SunmiOrange, modifier = Modifier.size(16.dp))
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.pos_increase_quantity), tint = SunmiOrange, modifier = Modifier.size(16.dp))
             }
         }
     }
@@ -1383,10 +1385,10 @@ private fun DiscountDialog(
                 OutlinedTextField(
                     value = amountText, onValueChange = { amountText = it.filter { c -> c.isDigit() || c == '.' } },
                     singleLine = true,
-                    label = { Text(if (isPercentage) "Percentage (%)" else "Amount ($)") },
+                    label = { Text(stringResource(if (isPercentage) R.string.pos_discount_percentage else R.string.pos_discount_amount)) },
                     modifier = Modifier.fillMaxWidth(),
                 )
-                if (discountMinorUnit > 0) Text("Discount: ${formatter.format(discountMinorUnit)}", fontSize = 14.sp, color = PosOnlineDot)
+                if (discountMinorUnit > 0) Text(stringResource(R.string.pos_discount_preview, formatter.format(discountMinorUnit)), fontSize = 14.sp, color = PosOnlineDot)
             }
         },
         confirmButton = { TextButton(onClick = { if (discountMinorUnit > 0) onApply(discountMinorUnit) }, enabled = discountMinorUnit > 0) { Text(stringResource(R.string.permission_denied_ok)) } },

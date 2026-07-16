@@ -179,7 +179,7 @@ fun CheckoutScreen(
                         if (uiState.isLoading) {
                             CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
                         } else {
-                            Text(method.name.replace('_', ' '), style = MaterialTheme.typography.titleMedium)
+                            Text(paymentMethodLabel(method), style = MaterialTheme.typography.titleMedium)
                         }
                     }
                 }
@@ -235,7 +235,7 @@ fun CheckoutScreen(
                                         onClick = { viewModel.payShareWithMethod(share.index, method) },
                                         modifier = Modifier.weight(1f),
                                         enabled = uiState.remainingMinorUnit > 0,
-                                    ) { Text(method.name.take(4)) }
+                                    ) { Text(paymentMethodLabel(method)) }
                                 }
                             }
                         }
@@ -517,7 +517,7 @@ private fun PaymentHistoryCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("${payment.method.name}: ${formatter.format(payment.amountMinorUnit)}")
+                    Text(stringResource(R.string.checkout_payment_history_item, paymentMethodLabel(payment.method), formatter.format(payment.amountMinorUnit)))
                     TextButton(onClick = { onRefund(payment.id) }) {
                         Text(stringResource(R.string.checkout_refund))
                     }
@@ -525,4 +525,14 @@ private fun PaymentHistoryCard(
             }
         }
     }
+}
+
+@Composable
+private fun paymentMethodLabel(method: PaymentMethod): String = when (method) {
+    PaymentMethod.CASH -> stringResource(R.string.checkout_pay_cash)
+    PaymentMethod.CARD -> stringResource(R.string.checkout_pay_card)
+    PaymentMethod.QR_CODE -> stringResource(R.string.checkout_pay_qr)
+    PaymentMethod.VOUCHER -> stringResource(R.string.checkout_pay_voucher)
+    PaymentMethod.GIFT_CARD -> stringResource(R.string.checkout_pay_gift_card)
+    PaymentMethod.OTHER -> stringResource(R.string.checkout_pay_other)
 }

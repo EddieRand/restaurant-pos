@@ -42,7 +42,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 private val sinceFmt = SimpleDateFormat("MMM d, yyyy", Locale.US)
-private val visitFmt = SimpleDateFormat("MMM d, yyyy", Locale.US)
+private val visitFmt = SimpleDateFormat("yyyy年M月d日", Locale.SIMPLIFIED_CHINESE)
 private val txnFmt = SimpleDateFormat("MMM d · HH:mm", Locale.US)
 private const val DAY_MS = 86_400_000L
 
@@ -337,13 +337,14 @@ private fun tierLabel(tierId: String?): String = when (tierId?.removePrefix("tie
     else -> tierId!!.removePrefix("tier-").replaceFirstChar { it.uppercase() }
 }
 
+@Composable
 private fun lastVisitText(epoch: Long): String {
     if (epoch <= 0) return "—"
     val now = System.currentTimeMillis()
     val days = (now - epoch) / DAY_MS
     return when (days) {
-        0L -> "Today"
-        1L -> "Yesterday"
+        0L -> stringResource(R.string.cust_today)
+        1L -> stringResource(R.string.cust_yesterday)
         else -> visitFmt.format(Date(epoch))
     }
 }

@@ -69,7 +69,7 @@ fun PosSidebar(
     active: PosDestination,
     onSelect: (PosDestination) -> Unit,
     storeName: String = "Morning Cafe",
-    shiftName: String = "Manager",
+    shiftName: String? = null,
     isOnline: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
@@ -112,7 +112,7 @@ fun PosSidebar(
             }
             Spacer(Modifier.size(10.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.sidebar_shift_fmt, shiftName), fontSize = 13.sp, color = PosTextSecondary)
+                Text(stringResource(R.string.sidebar_shift_fmt, shiftName ?: stringResource(R.string.sidebar_default_shift)), fontSize = 13.sp, color = PosTextSecondary)
                 Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null, tint = PosTextSecondary, modifier = Modifier.size(16.dp))
             }
         }

@@ -10,4 +10,6 @@
     <string name="clockin_cancel">Skip</string>
     <string name="auth_invalid_pin">Incorrect PIN. Please try again.</string>
     <string name="auth_user_inactive">This account is inactive.</string>
+    <string name="auth_backspace">Delete digit</string>
+    <string name="auth_confirm">OK</string>
 </resources>

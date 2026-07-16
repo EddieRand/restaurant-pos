@@ -7,4 +7,9 @@
     <string name="auth_logout">退出登录</string>
     <string name="auth_invalid_pin">PIN 码错误，请重试</string>
     <string name="auth_user_inactive">该账户已停用</string>
+    <string name="auth_backspace">删除一位</string>
+    <string name="auth_confirm">确认</string>
+    <string name="clockin_title">上班打卡</string>
+    <string name="clockin_confirm">立即打卡</string>
+    <string name="clockin_cancel">暂不打卡</string>
 </resources>

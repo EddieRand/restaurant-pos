@@ -11,6 +11,9 @@
     <string name="checkout_pay_cash">Cash</string>
     <string name="checkout_pay_card">Card</string>
     <string name="checkout_pay_qr">QR Code</string>
+    <string name="checkout_pay_voucher">Voucher</string>
+    <string name="checkout_pay_gift_card">Gift card</string>
+    <string name="checkout_pay_other">Other</string>
     <string name="checkout_split">Split Bill</string>
     <string name="checkout_split_parties">Split %d ways</string>
     <string name="checkout_refund">Refund</string>
@@ -18,6 +21,7 @@
     <string name="checkout_discount_label">Discount Amount</string>
     <string name="checkout_service_charge_label">Service Charge</string>
     <string name="checkout_payment_history">Payment History</string>
+    <string name="checkout_payment_history_item">%1$s: %2$s</string>
     <!-- Permission denied -->
     <string name="permission_denied_title">Permission Required</string>
     <string name="permission_denied_body">You do not have permission to: %1$s. Please ask a supervisor.</string>

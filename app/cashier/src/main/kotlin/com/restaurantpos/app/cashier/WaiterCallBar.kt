@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -51,7 +52,7 @@ fun WaiterCallBar(
                     tint = MaterialTheme.colorScheme.onErrorContainer,
                 )
                 Text(
-                    "Table Calls:",
+                    stringResource(R.string.waiter_calls_title),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onErrorContainer,
@@ -84,7 +85,7 @@ private fun WaiterCallChip(call: WaiterCall, onAck: () -> Unit) {
             Icon(call.reason.icon(), contentDescription = null, modifier = Modifier.size(14.dp))
         },
         trailingIcon = {
-            Icon(Icons.Default.Close, contentDescription = "Acknowledge", modifier = Modifier.size(14.dp))
+            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.waiter_call_acknowledge), modifier = Modifier.size(14.dp))
         },
         shape = RoundedCornerShape(20.dp),
         colors = InputChipDefaults.inputChipColors(
@@ -96,11 +97,12 @@ private fun WaiterCallChip(call: WaiterCall, onAck: () -> Unit) {
     )
 }
 
+@Composable
 private fun WaiterCallReason.label() = when (this) {
-    WaiterCallReason.GENERAL        -> "Service"
-    WaiterCallReason.REQUEST_BILL   -> "Bill please"
-    WaiterCallReason.NEED_WATER     -> "Need water"
-    WaiterCallReason.NEED_UTENSILS  -> "Need utensils"
+    WaiterCallReason.GENERAL        -> stringResource(R.string.waiter_call_service)
+    WaiterCallReason.REQUEST_BILL   -> stringResource(R.string.waiter_call_bill)
+    WaiterCallReason.NEED_WATER     -> stringResource(R.string.waiter_call_water)
+    WaiterCallReason.NEED_UTENSILS  -> stringResource(R.string.waiter_call_utensils)
 }
 
 private fun WaiterCallReason.icon() = when (this) {

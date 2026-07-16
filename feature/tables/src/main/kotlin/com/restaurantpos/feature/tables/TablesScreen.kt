@@ -182,10 +182,10 @@ fun TablesScreen(
             Spacer(Modifier.weight(1f))
             // View toggle + zoom placeholder
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("View: Floor Plan", fontSize = 12.sp, color = PosTextMuted)
+                Text(stringResource(R.string.tbl_view_floor_plan_label), fontSize = 12.sp, color = PosTextMuted)
                 Text("100%", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = PosTextSecondary)
-                Icon(Icons.Filled.Add, contentDescription = "+", tint = PosTextMuted, modifier = Modifier.size(16.dp).clickableNoRipple {})
-                Icon(Icons.Filled.Remove, contentDescription = "-", tint = PosTextMuted, modifier = Modifier.size(16.dp).clickableNoRipple {})
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.tbl_zoom_in), tint = PosTextMuted, modifier = Modifier.size(16.dp).clickableNoRipple {})
+                Icon(Icons.Filled.Remove, contentDescription = stringResource(R.string.tbl_zoom_out), tint = PosTextMuted, modifier = Modifier.size(16.dp).clickableNoRipple {})
             }
             Spacer(Modifier.width(12.dp))
             Surface(shape = RoundedCornerShape(10.dp), color = PosShellBg, border = BorderStroke(1.dp, PosChipBorder), modifier = Modifier.clickable(onClick = onNavigateToTakeaway)) {
@@ -361,7 +361,7 @@ private fun FloorView(
                 // Area tabs
                 Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                     AreaTab(stringResource(R.string.tbl_area_all), selectedArea == null) { selectedArea = null }
-                    areas.forEach { a -> AreaTab(a.replace('-', ' ').replaceFirstChar { it.uppercase() }, selectedArea == a) { selectedArea = a } }
+                    areas.forEach { a -> AreaTab(areaDisplayName(a), selectedArea == a) { selectedArea = a } }
                 }
                 HorizontalDivider(color = PosHairline)
                 // Legend + search + add table
@@ -391,7 +391,7 @@ private fun FloorView(
                     val (lbl, _) = tableStatusStyle(statusFilter!!)
                     Surface(color = SunmiOrange.copy(alpha = 0.1f), modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                         Row(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Filter: $lbl", fontSize = 12.sp, color = SunmiOrange)
+                            Text(stringResource(R.string.tbl_filter_fmt, lbl), fontSize = 12.sp, color = SunmiOrange)
                             TextButton(onClick = { statusFilter = null }) { Text(stringResource(R.string.tbl_search_clear), fontSize = 12.sp, color = SunmiOrange) }
                         }
                     }
@@ -923,7 +923,7 @@ private fun ReservationRow(
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(reservation.guestName, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = PosTextPrimary)
-                Text("${reservation.guestCount} guests · $tableName", fontSize = 13.sp, color = PosTextSecondary)
+                Text(stringResource(R.string.tbl_guest_table_fmt, reservation.guestCount, tableName), fontSize = 13.sp, color = PosTextSecondary)
             }
             Surface(color = badgeBg, shape = RoundedCornerShape(6.dp)) {
                 Text(
@@ -1117,7 +1117,7 @@ private fun TableCard(
                 Box(Modifier.size(9.dp).clip(CircleShape).background(if (solidOrdered) Color.White else statusColor))
                 Spacer(Modifier.weight(1f))
                 if (table.capacity > 0) {
-                    Text("${table.capacity}p", fontSize = 12.sp, color = if (solidOrdered) Color.White.copy(alpha = 0.85f) else PosTextMuted)
+                    Text(stringResource(R.string.tbl_capacity_short_fmt, table.capacity), fontSize = 12.sp, color = if (solidOrdered) Color.White.copy(alpha = 0.85f) else PosTextMuted)
                 }
             }
             Text(table.name, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = nameColor)
@@ -1162,7 +1162,7 @@ private fun MergeTablesDialog(
                     val (lbl, _) = tableStatusStyle(t.status)
                     Surface(shape = RoundedCornerShape(10.dp), color = if (selectedTarget == t.id) SunmiOrange.copy(alpha = 0.08f) else Color.Transparent, border = BorderStroke(1.dp, if (selectedTarget == t.id) SunmiOrange else PosHairline), modifier = Modifier.fillMaxWidth().clickableNoRipple { selectedTarget = t.id }.padding(12.dp)) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Column { Text(t.name, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = PosTextPrimary); Text("$lbl · ${t.capacity} seats", fontSize = 12.sp, color = PosTextSecondary) }
+                            Column { Text(t.name, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = PosTextPrimary); Text(stringResource(R.string.tbl_status_seats_fmt, lbl, t.capacity), fontSize = 12.sp, color = PosTextSecondary) }
                         }
                     }
                     Spacer(Modifier.height(8.dp))
@@ -1210,7 +1210,7 @@ private fun SplitTableDialog(
                 Text(stringResource(R.string.tbl_split_target), fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 available.forEach { t ->
                     Surface(shape = RoundedCornerShape(8.dp), color = if (targetTable == t.id) SunmiOrange.copy(alpha = 0.08f) else PosContentBg, border = BorderStroke(1.dp, if (targetTable == t.id) SunmiOrange else PosHairline), modifier = Modifier.fillMaxWidth().clickableNoRipple { targetTable = t.id }.padding(10.dp)) {
-                        Text("${t.name} · ${t.capacity} seats", fontSize = 13.sp, color = PosTextPrimary)
+                        Text(stringResource(R.string.tbl_table_seats_fmt, t.name, t.capacity), fontSize = 13.sp, color = PosTextPrimary)
                     }
                     Spacer(Modifier.height(4.dp))
                 }
@@ -1253,7 +1253,7 @@ private fun WalkInDialog(
                 Spacer(Modifier.height(8.dp))
                 available.forEach { t ->
                     Surface(shape = RoundedCornerShape(8.dp), color = if (selectedTable == t.id) SunmiOrange.copy(alpha = 0.08f) else PosContentBg, border = BorderStroke(1.dp, if (selectedTable == t.id) SunmiOrange else PosHairline), modifier = Modifier.fillMaxWidth().clickableNoRipple { selectedTable = t.id }.padding(10.dp)) {
-                        Text("${t.name} · ${t.capacity} seats", fontSize = 13.sp, color = PosTextPrimary)
+                        Text(stringResource(R.string.tbl_table_seats_fmt, t.name, t.capacity), fontSize = 13.sp, color = PosTextPrimary)
                     }
                     Spacer(Modifier.height(4.dp))
                 }
@@ -1292,7 +1292,7 @@ private fun WaitlistDialog(
                             Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                                 Column(Modifier.weight(1f)) {
                                     Text(e.guestName, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = PosTextPrimary)
-                                    Text("${e.guestCount} guests · ${stringResource(R.string.tbl_waitlist_waiting, "$mins")}", fontSize = 12.sp, color = PosTextSecondary)
+                                    Text(stringResource(R.string.tbl_waitlist_guest_fmt, e.guestCount, stringResource(R.string.tbl_waitlist_waiting, "$mins")), fontSize = 12.sp, color = PosTextSecondary)
                                 }
                                 TextButton(onClick = { onSeatFromWaitlist(e.guestCount) }) { Text(stringResource(R.string.tbl_waitlist_seat), fontSize = 12.sp) }
                                 IconButton(onClick = { onRemove(e.id) }) { Icon(Icons.Filled.Close, contentDescription = null, tint = PosTextMuted, modifier = Modifier.size(18.dp)) }
@@ -1343,7 +1343,7 @@ private fun AddTableDialog(
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     areas.forEach { a ->
                         Surface(shape = RoundedCornerShape(8.dp), color = if (selectedArea == a) SunmiOrange else PosContentBg, border = BorderStroke(1.dp, if (selectedArea == a) SunmiOrange else PosHairline), modifier = Modifier.clickableNoRipple { selectedArea = a }) {
-                            Text(a, Modifier.padding(horizontal = 12.dp, vertical = 6.dp), fontSize = 13.sp, color = if (selectedArea == a) Color.White else PosTextPrimary)
+                            Text(areaDisplayName(a), Modifier.padding(horizontal = 12.dp, vertical = 6.dp), fontSize = 13.sp, color = if (selectedArea == a) Color.White else PosTextPrimary)
                         }
                     }
                 }
@@ -1362,6 +1362,13 @@ private fun AddTableDialog(
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.tables_cancel)) } },
     )
+}
+
+@Composable
+private fun areaDisplayName(area: String): String = when (area.lowercase().replace('_', '-').replace(' ', '-')) {
+    "indoor", "main-hall" -> stringResource(R.string.tbl_area_indoor)
+    "outdoor" -> stringResource(R.string.tbl_area_outdoor)
+    else -> area.replace('-', ' ').replaceFirstChar { it.uppercase() }
 }
 
 // ── Add Notes Dialog ────────────────────────────────────────────────────────

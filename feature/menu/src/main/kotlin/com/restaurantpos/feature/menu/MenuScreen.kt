@@ -49,6 +49,8 @@ private fun Map<String, String>.localeName(locale: String): String {
     return this[lang] ?: this[locale] ?: this["en"] ?: values.firstOrNull() ?: ""
 }
 
+private const val CASHIER_DISPLAY_LOCALE = "zh-CN"
+
 @Composable
 private fun categoryLabel(categoryId: String): String = when (categoryId) {
     "cat-mains" -> stringResource(R.string.cat_mains)
@@ -97,7 +99,7 @@ fun MenuScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val formatter = remember(uiState.regionConfig) { AmountFormatter(uiState.regionConfig) }
-    val locale = uiState.regionConfig.locale
+    val locale = CASHIER_DISPLAY_LOCALE
     var tab by remember { mutableStateOf(MenuTab.ITEMS) }
     var query by rememberSaveable { mutableStateOf("") }
 

@@ -2,6 +2,7 @@
 <resources>
     <string name="tables_title">桌台</string>
     <string name="tables_takeaway">外带</string>
+    <string name="tables_delivery">外卖</string>
     <string name="tables_tab_floor">餐厅</string>
     <string name="tables_tab_reservations">预订</string>
     <string name="tables_new_reservation">新建预订</string>
@@ -38,6 +39,8 @@
     <string name="tbl_add_table">添加桌台</string>
     <string name="tbl_more">更多</string>
     <string name="tbl_area_all">全部区域</string>
+    <string name="tbl_area_indoor">室内</string>
+    <string name="tbl_area_outdoor">室外</string>
     <string name="tbl_view_floor_plan">平面图</string>
     <string name="tbl_main_entrance">大门入口</string>
     <string name="tbl_bar">吧台</string>
@@ -128,4 +131,12 @@
     <string name="tbl_dine_in">堂食</string>
     <string name="tbl_table_12">12 号桌</string>
     <string name="tbl_view_floor_plan_label">视图: 平面图</string>
+    <string name="tbl_zoom_in">放大</string>
+    <string name="tbl_zoom_out">缩小</string>
+    <string name="tbl_filter_fmt">筛选：%1$s</string>
+    <string name="tbl_guest_table_fmt">%1$d 位 · %2$s</string>
+    <string name="tbl_capacity_short_fmt">%1$d 人桌</string>
+    <string name="tbl_status_seats_fmt">%1$s · %2$d 座</string>
+    <string name="tbl_table_seats_fmt">%1$s · %2$d 座</string>
+    <string name="tbl_waitlist_guest_fmt">%1$d 位 · %2$s</string>
 </resources>

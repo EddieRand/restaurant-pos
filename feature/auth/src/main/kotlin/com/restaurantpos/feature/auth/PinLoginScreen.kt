@@ -119,7 +119,7 @@ private fun PinPad(
         // Bottom row: backspace, 0, confirm
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilledTonalIconButton(onClick = onBackspace, modifier = Modifier.size(72.dp)) {
-                Icon(Icons.AutoMirrored.Filled.Backspace, contentDescription = null)
+                Icon(Icons.AutoMirrored.Filled.Backspace, contentDescription = stringResource(R.string.auth_backspace))
             }
             PinButton(label = "0", onClick = { onDigit('0') })
             Button(
@@ -127,7 +127,7 @@ private fun PinPad(
                 modifier = Modifier.size(72.dp),
                 contentPadding = PaddingValues(0.dp),
             ) {
-                Text(text = "OK", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(text = stringResource(R.string.auth_confirm), fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
