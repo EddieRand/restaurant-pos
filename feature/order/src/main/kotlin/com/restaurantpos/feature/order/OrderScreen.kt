@@ -104,6 +104,8 @@ fun OrderScreen(
      * regression testing.
      */
     onStartNewOrder: () -> Unit = {},
+    /** Toggles the app shell's left navigation sidebar (hamburger in the top bar). */
+    onToggleNav: () -> Unit = {},
     viewModel: OrderViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -214,6 +216,7 @@ fun OrderScreen(
                 selectedCustomerName = uiState.selectedCustomerName,
                 searchQuery = uiState.searchQuery,
                 onSearchChange = viewModel::setSearchQuery,
+                onToggleNav = onToggleNav,
             )
             HorizontalDivider(color = PosHairline)
         }
@@ -325,6 +328,7 @@ private fun PosTopBar(
     selectedCustomerName: String? = null,
     searchQuery: String = "",
     onSearchChange: (String) -> Unit = {},
+    onToggleNav: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var showPickupEdit by remember { mutableStateOf(false) }
@@ -361,12 +365,12 @@ private fun PosTopBar(
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Hamburger (collapse nav — visual, matches mockup)
+        // Hamburger — collapses/expands the app shell's left navigation.
         Icon(
             Icons.Filled.Menu,
             contentDescription = null,
             tint = PosTextSecondary,
-            modifier = Modifier.size(22.dp).clickableNoRipple {},
+            modifier = Modifier.size(22.dp).clickableNoRipple { onToggleNav() },
         )
         Spacer(Modifier.width(14.dp))
         // Order-type segmented pills

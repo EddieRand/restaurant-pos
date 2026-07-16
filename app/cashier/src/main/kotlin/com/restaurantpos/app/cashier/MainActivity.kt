@@ -31,9 +31,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.material3.CircularProgressIndicator
 import com.restaurantpos.core.designsystem.PosContentBg
 import androidx.compose.material3.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -88,6 +94,9 @@ fun CashierApp() {
     val navController = rememberNavController()
     val syncVm: SyncStatusViewModel = hiltViewModel()
     val syncState by syncVm.uiState.collectAsState()
+    // Collapsible left nav — toggled from the POS top-bar hamburger to free
+    // horizontal space while taking orders. Survives rotation via saveable.
+    var sidebarCollapsed by rememberSaveable { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -105,13 +114,22 @@ fun CashierApp() {
         val currentRoute = backStackEntry?.destination?.route
         Row(modifier = Modifier.fillMaxSize().weight(1f)) {
         // Persistent left navigation on every screen except the login gate.
+        // Collapsible from the POS hamburger; slides in/out horizontally.
         if (currentRoute != null && currentRoute != "login") {
-            PosSidebar(
-                active = activeDestinationFor(currentRoute),
-                onSelect = { dest -> onSidebarSelect(navController, currentRoute, dest) },
-                isOnline = syncState.isOnline,
-            )
-            VerticalDivider(color = PosHairline)
+            AnimatedVisibility(
+                visible = !sidebarCollapsed,
+                enter = expandHorizontally(),
+                exit = shrinkHorizontally(),
+            ) {
+                Row {
+                    PosSidebar(
+                        active = activeDestinationFor(currentRoute),
+                        onSelect = { dest -> onSidebarSelect(navController, currentRoute, dest) },
+                        isOnline = syncState.isOnline,
+                    )
+                    VerticalDivider(color = PosHairline)
+                }
+            }
         }
         NavHost(
             navController = navController,
@@ -148,6 +166,7 @@ fun CashierApp() {
 
             composable("tables") {
                 TablesScreen(
+                    onToggleNav = { sidebarCollapsed = !sidebarCollapsed },
                     onTableSeated = { orderId -> navController.navigate("order/$orderId") },
                     onTableResumed = { orderId -> navController.navigate("order/$orderId") },
                     onNavigateToReport = { navController.navigate("report") },
@@ -164,6 +183,7 @@ fun CashierApp() {
                 arguments = listOf(navArgument("orderId") { type = NavType.StringType }),
             ) {
                 OrderScreen(
+                    onToggleNav = { sidebarCollapsed = !sidebarCollapsed },
                     onOrderPlaced = { orderId ->
                         navController.navigate("checkout/$orderId") {
                             popUpTo("order/$orderId") { inclusive = true }

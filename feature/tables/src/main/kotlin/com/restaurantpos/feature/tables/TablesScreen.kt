@@ -115,6 +115,8 @@ fun TablesScreen(
     onNavigateToTakeaway: () -> Unit = {},
     pendingSyncCount: Int = 0,
     isOnline: Boolean = true,
+    /** Toggles the app shell's left navigation sidebar (hamburger in the top bar). */
+    onToggleNav: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: TablesViewModel = hiltViewModel(),
 ) {
@@ -128,7 +130,7 @@ fun TablesScreen(
             modifier = Modifier.fillMaxWidth().background(PosShellBg).padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(Icons.Filled.Menu, contentDescription = null, tint = PosTextSecondary, modifier = Modifier.size(22.dp).clickableNoRipple {})
+            Icon(Icons.Filled.Menu, contentDescription = null, tint = PosTextSecondary, modifier = Modifier.size(22.dp).clickableNoRipple { onToggleNav() })
             Spacer(Modifier.width(14.dp))
             Text(stringResource(R.string.tbl_dine_in), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = PosTextPrimary)
             Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null, tint = PosTextMuted, modifier = Modifier.size(16.dp))
