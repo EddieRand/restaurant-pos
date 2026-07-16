@@ -2,7 +2,7 @@ import axios from 'axios'
 import { apiClient } from './client'
 import type { OperatingInsightResponse } from './ai'
 
-export type AiWorkspaceExpert = 'AUTO' | 'OPERATIONS' | 'PRODUCT_HELP' | 'MENU'
+export type AiWorkspaceExpert = 'AUTO' | 'OPERATIONS' | 'PRODUCT_HELP' | 'MENU' | 'GROWTH'
 export type AiWorkspaceStepKind = 'ANALYSIS' | 'HOW_TO' | 'ACTION'
 export type AiWorkspaceStepStatus = 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'AWAITING_CONFIRMATION' | 'FAILED' | 'SKIPPED' | 'EXECUTED'
 
@@ -78,12 +78,74 @@ export interface AiPriceExecution {
   idempotentReplay: boolean
 }
 
+export type AiGrowthDataMode = 'REAL' | 'AI_GENERATED' | 'DEMO_SIGNAL'
+export type AiGrowthProposalType = 'COUPON_CAMPAIGN'
+
+export interface AiGrowthEvidence {
+  key: string
+  label: string
+  numericValue?: number | null
+  textValue?: string | null
+  unit: string
+  dataMode: AiGrowthDataMode
+  source: string
+}
+
+export interface AiGrowthExpectedImpact {
+  title: string
+  detail: string
+  dataMode: AiGrowthDataMode
+}
+
+export interface AiGrowthEditableParams {
+  fixedAmountMinorUnit: number
+  validDays: number
+  targetSegment: string
+}
+
+export interface AiGrowthBriefing {
+  briefingId: string
+  businessDate: string
+  generatedAt: number
+  dataFingerprint: string
+  headline: string
+  summary: string
+  evidence: AiGrowthEvidence[]
+  suggestions: string[]
+  contentDraft?: string | null
+  demoSignalNotice: string
+}
+
+export interface AiGrowthProposal {
+  proposalId: string
+  type: AiGrowthProposalType
+  dataMode: AiGrowthDataMode
+  evidence: AiGrowthEvidence[]
+  expectedImpact: AiGrowthExpectedImpact
+  editableParams: AiGrowthEditableParams
+  expiresAt: number
+  requiresConfirmation: boolean
+  version: number
+}
+
+export interface AiGrowthExecution {
+  proposalId: string
+  auditId: string
+  couponId: string
+  campaignId: string
+  idempotentReplay: boolean
+  executedAt: number
+}
+
 export interface AiWorkspaceStepResult {
   insight?: OperatingInsightResponse | null
   query?: AiWorkspaceQueryResult | null
   howTo?: AiWorkspaceHowToResult | null
   priceProposal?: AiPriceProposal | null
   execution?: AiPriceExecution | null
+  growthBriefing?: AiGrowthBriefing | null
+  growthProposal?: AiGrowthProposal | null
+  growthExecution?: AiGrowthExecution | null
 }
 
 export interface AiWorkspaceError {
@@ -194,6 +256,18 @@ export const aiWorkspaceApi = {
 
   executePriceProposal: (proposalId: string, idempotencyKey: string) =>
     apiClient.post<AiPriceExecution>(`/admin/ai/price-proposals/${encodeURIComponent(proposalId)}/execute`, {
+      confirmed: true,
+      idempotencyKey,
+    }).then(response => response.data),
+
+  getTodayGrowthBriefing: () =>
+    apiClient.get<AiGrowthBriefing>('/admin/ai/growth/briefings/today').then(response => response.data),
+
+  reviseGrowthProposal: (proposalId: string, request: Partial<AiGrowthEditableParams>) =>
+    apiClient.post<AiGrowthProposal>(`/admin/ai/growth/proposals/${encodeURIComponent(proposalId)}/revise`, request).then(response => response.data),
+
+  executeGrowthProposal: (proposalId: string, idempotencyKey: string) =>
+    apiClient.post<AiGrowthExecution>(`/admin/ai/growth/proposals/${encodeURIComponent(proposalId)}/execute`, {
       confirmed: true,
       idempotencyKey,
     }).then(response => response.data),
