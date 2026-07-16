@@ -474,6 +474,56 @@ object AiWorkspaceEventsTable : Table("ai_workspace_events") {
     override val primaryKey = PrimaryKey(runId, sequence)
 }
 
+// ── AI Growth Adviser ──────────────────────────────────────────────────────
+
+object AiGrowthBriefingsTable : Table("ai_growth_briefings") {
+    val id = varchar("id", 64)
+    val businessDate = varchar("business_date", 10).index()
+    val dataFingerprint = varchar("data_fingerprint", 64).index()
+    val payloadJson = text("payload_json")
+    val generatedAt = long("generated_at")
+    init { uniqueIndex(businessDate, dataFingerprint) }
+    override val primaryKey = PrimaryKey(id)
+}
+
+object AiGrowthProposalsTable : Table("ai_growth_proposals") {
+    val id = varchar("id", 64)
+    val actorId = varchar("actor_id", 64).index()
+    val type = varchar("type", 32)
+    val dataMode = varchar("data_mode", 24)
+    val evidenceJson = text("evidence_json")
+    val expectedImpactJson = text("expected_impact_json")
+    val editableParamsJson = text("editable_params_json")
+    val dataFingerprint = varchar("data_fingerprint", 64)
+    val status = varchar("status", 24).default("ACTIVE")
+    val version = integer("version")
+    val parentProposalId = varchar("parent_proposal_id", 64).nullable().index()
+    val expiresAt = long("expires_at")
+    val createdAt = long("created_at")
+    override val primaryKey = PrimaryKey(id)
+}
+
+object AiGrowthProposalVersionsTable : Table("ai_growth_proposal_versions") {
+    val proposalId = varchar("proposal_id", 64)
+    val version = integer("version")
+    val editableParamsJson = text("editable_params_json")
+    val createdAt = long("created_at")
+    override val primaryKey = PrimaryKey(proposalId, version)
+}
+
+object AiActionAuditsTable : Table("ai_action_audits") {
+    val id = varchar("id", 64)
+    val actionType = varchar("action_type", 48)
+    val proposalId = varchar("proposal_id", 64).uniqueIndex()
+    val actorId = varchar("actor_id", 64).index()
+    val executedParamsJson = text("executed_params_json")
+    val couponId = varchar("coupon_id", 64).nullable()
+    val campaignId = varchar("campaign_id", 64).nullable()
+    val idempotencyKey = varchar("idempotency_key", 128).uniqueIndex()
+    val createdAt = long("created_at")
+    override val primaryKey = PrimaryKey(id)
+}
+
 // ── CRM ───────────────────────────────────────────────────────────────────────
 
 object CustomersTable : Table("customers") {

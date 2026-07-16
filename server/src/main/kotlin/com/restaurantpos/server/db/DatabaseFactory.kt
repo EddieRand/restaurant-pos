@@ -8,6 +8,7 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -67,6 +68,10 @@ object DatabaseFactory {
                 AiWorkspaceRunsTable,
                 AiWorkspaceRunStepsTable,
                 AiWorkspaceEventsTable,
+                AiGrowthBriefingsTable,
+                AiGrowthProposalsTable,
+                AiGrowthProposalVersionsTable,
+                AiActionAuditsTable,
                 MenuProfilesTable,
                 MenuItemProfilesTable,
                 WaiterCallsTable,
@@ -265,17 +270,18 @@ object DatabaseFactory {
 
     private fun seedDefaultRolesAndPermissions() {
         val exists = RolesTable.selectAll().count() > 0
-        if (exists) return
 
         // 1. Insert 4 built-in roles
         val roleIds = listOf("admin", "manager", "cashier", "waiter")
         val roleNames = listOf("role.admin", "role.manager", "role.cashier", "role.waiter")
-        roleIds.forEachIndexed { i, id ->
-            RolesTable.insert {
-                it[RolesTable.id]          = id
-                it[displayName]            = roleNames[i]
-                it[isBuiltin]             = true
-                it[sortOrder]              = i
+        if (!exists) {
+            roleIds.forEachIndexed { i, id ->
+                RolesTable.insert {
+                    it[RolesTable.id]          = id
+                    it[displayName]            = roleNames[i]
+                    it[isBuiltin]             = true
+                    it[sortOrder]              = i
+                }
             }
         }
 
@@ -307,7 +313,7 @@ object DatabaseFactory {
 
         fun insertPermissions(roleId: String, keys: Iterable<String>) {
             keys.forEach { key ->
-                RolePermissionsTable.insert {
+                RolePermissionsTable.insertIgnore {
                     it[RolePermissionsTable.roleId]        = roleId
                     it[RolePermissionsTable.permissionKey]  = key
                 }

@@ -50,6 +50,8 @@ class DeepSeekAiWorkspaceClient(
             提供 2 到 4 个互斥、可直接选择的选项，不得把“其他”作为选项。
             queryType 只允许 SUMMARY、TOP_ITEMS、PEAK_HOURS、PAYMENT_METHODS、TREND。
             经营综合分析用 report.operating_insight；明确问数据用 report.query；产品操作指导用 product.howto_search；明确指定菜品及改价金额/比例才用 menu.update_price。
+            增长日报用 growth.daily_briefing；短视频文案用 growth.content_draft；创建优惠券活动方案用 crm.coupon_campaign_proposal。
+            优惠券活动必须明确固定优惠金额、1-90 天有效期、以及“全部顾客/30天未到店/高价值顾客”之一，否则必须返回选项澄清。
             不得创造工具。凡是会明显改变结果的信息不确定时必须澄清，包括日期范围、指标口径、菜品目标、门店/范围、改价金额或比例。
             不得依据分析自行决定价格。如果改价没有明确菜品或明确金额/比例，必须澄清，不能生成步骤。
             dependsOn 使用之前步骤的一基序号。所有标题用中文。
